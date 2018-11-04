@@ -25,7 +25,7 @@ class SkinModel():
     def getModels(self):
         return self.skinHisto, self.nonskinHisto
     
-    def detect(self,img,mode='hsv',threshold = 10):
+    def detect(self,img,mode='rgb',threshold = 10):
         if mode=='rgb':
             img = rgb2hsv(img)
         elif mode=='hsv':
@@ -46,6 +46,9 @@ class SkinModel():
 
 
         mask = np.array(pnon/pskin < threshold,dtype=np.uint8)
+
+        #cv2.imshow('original frame', img)
+        #cv2.imshow('skin frame', mask)
 
         # newImg = (img.transpose(2,0,1) * mask).transpose(1,2,0)
         #     newImg = newImg * mask

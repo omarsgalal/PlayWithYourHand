@@ -53,20 +53,9 @@ class HandDetector:
 
 
     def __combine__(self, MD, SCD, morphW, sB):
-        # print(MD.shape)
-        # print(MD.dtype)
-        # print(SCD.shape)
-        # print(SCD.dtype)
-        # print(morphW.shape)
-        # print(morphW.dtype)
-        # print(sB.shape)
-        # print(sB.dtype)
-        rate_img = (MD + SCD + morphW - sB) / 3
-        print(rate_img.shape,rate_img.dtype)
-        # rate_img = 255*(rate_img - np.min(rate_img))/np.ptp(rate_img).astype(np.uint8)
-        final_img = cv2.threshold(rate_img.astype(np.uint8),0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[0]
-        print(final_img.shape, final_img.dtype)
-        return final_img #(final_img - np.min(final_img))/np.ptp(final_img)
+        rate_img = ((MD + SCD + morphW - sB) / 3 * 255).astype(np.uint8)
+        ret, final_img = cv2.threshold(rate_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        return final_img
 
 
 
