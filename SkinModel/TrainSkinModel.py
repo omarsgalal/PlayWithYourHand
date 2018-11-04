@@ -47,24 +47,24 @@ class TrainSkinModel():
             a = np.zeros(shape=img.shape)
                             
             for line in progressbar.progressbar(lines):
-            elem = line.split(" ")
-            if len(elem) == 11:
-                start = (int(int(elem[0])*(2-factor)),int(int(elem[1])*(2-factor)))
-                end = (int(elem[0])+int(int(elem[2])*factor),int(elem[1])+int(int(elem[3])*factor))
-                cv2.rectangle(a,start,end,(1,1,1),cv2.FILLED)
+                elem = line.split(" ")
+                if len(elem) == 11:
+                    start = (int(int(elem[0])*(2-factor)),int(int(elem[1])*(2-factor)))
+                    end = (int(elem[0])+int(int(elem[2])*factor),int(elem[1])+int(int(elem[3])*factor))
+                    cv2.rectangle(a,start,end,(1,1,1),cv2.FILLED)
 
-            else:
-                if b:
-                    skin = img*a
-                    skinHisto += cv2.calcHist([skin.astype('uint8')],[0,1,2],None,[256,256,256],[0,256,0,256,0,256])
+                else:
+                    if b:
+                        skin = img*a
+                        skinHisto += cv2.calcHist([skin.astype('uint8')],[0,1,2],None,[256,256,256],[0,256,0,256,0,256])
 
-                    nonSkin = (1 - a) * img
-                    nonskinHisto += cv2.calcHist([nonSkin.astype('uint8')],[0,1,2],None,[256,256,256],[0,256,0,256,0,256])
+                        nonSkin = (1 - a) * img
+                        nonskinHisto += cv2.calcHist([nonSkin.astype('uint8')],[0,1,2],None,[256,256,256],[0,256,0,256,0,256])
 
-                    img = np.array( rgb2hsv(io.imread("{}/{}".format(grPath,line[:-1]))) *255,dtype=np.uint8)
-                    a = np.zeros(shape=img.shape)
-                
-                b= not b    
+                        img = np.array( rgb2hsv(io.imread("{}/{}".format(grPath,line[:-1]))) *255,dtype=np.uint8)
+                        a = np.zeros(shape=img.shape)
+                    
+                    b= not b    
         return skinHisto,nonskinHisto  
 
 
@@ -89,24 +89,24 @@ class TrainSkinModel():
 
 
     # work only on google colab
-    def downloadWIDER (self):
-        !pip install -U -q PyDrive
-        from pydrive.auth import GoogleAuth
-        from pydrive.drive import GoogleDrive
-        from google.colab import auth
-        from oauth2client.client import GoogleCredentials
+    # def downloadWIDER (self):
+    #     !pip install -U -q PyDrive
+    #     from pydrive.auth import GoogleAuth
+    #     from pydrive.drive import GoogleDrive
+    #     from google.colab import auth
+    #     from oauth2client.client import GoogleCredentials
 
-        auth.authenticate_user()
-        gauth = GoogleAuth()
-        gauth.credentials = GoogleCredentials.get_application_default()
-        drive = GoogleDrive(gauth)
+    #     auth.authenticate_user()
+    #     gauth = GoogleAuth()
+    #     gauth.credentials = GoogleCredentials.get_application_default()
+    #     drive = GoogleDrive(gauth)
 
-        file_id = '0B6eKvaijfFUDQUUwd21EckhUbWs'
-        downloaded = drive.CreateFile({'id': file_id})
-        downloaded.GetContentFile('WIDER_train.zip')
-        !unzip WIDER_train.zip &> abdo.txt
-        !pip install progressbar2 &> abdo.txt
-        import progressbar
-        !wget "https://transfer.sh/P2pwS/wider_face_train_bbx_gt.txt" &> abdo.txt
+    #     file_id = '0B6eKvaijfFUDQUUwd21EckhUbWs'
+    #     downloaded = drive.CreateFile({'id': file_id})
+    #     downloaded.GetContentFile('WIDER_train.zip')
+    #     !unzip WIDER_train.zip &> abdo.txt
+    #     !pip install progressbar2 &> abdo.txt
+    #     import progressbar
+    #     !wget "https://transfer.sh/P2pwS/wider_face_train_bbx_gt.txt" &> abdo.txt
 
 

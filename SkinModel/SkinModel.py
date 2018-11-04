@@ -3,8 +3,9 @@ import cv2
 import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
-
-import TrainSkinModel
+import sys
+sys.path.append('SkinModel')
+from TrainSkinModel import TrainSkinModel
 
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))
@@ -21,11 +22,13 @@ class SkinModel():
         self.nonskinHistoSum = np.sum(self.nonskinHisto,axis=2)
 
         
-
+    def getModels(self):
+        return self.skinHisto, self.nonskinHisto
+    
     def detect(self,img,mode='hsv',threshold = 10):
-        if mode='rgb':
+        if mode=='rgb':
             img = rgb2hsv(img)
-        elif mode='hsv':
+        elif mode=='hsv':
             pass
         else:
             raise ValueError('Image mode is not RGB nor HSV')
