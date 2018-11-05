@@ -4,6 +4,7 @@ import numpy as np
 from SkinModel.SkinModel import SkinModel
 from morphology import MorphologyDetector
 from motionDetection import MotionDetector
+from utils import get3DMask
 
 
 
@@ -35,9 +36,13 @@ class HandDetector:
         self.updateSkinBackgroundModel() # optimize
 
         roi, backgroundSubtraction = self.__motionDetection__.detect(frames_gray, currFrame_rgb, self.getSkinBackgroundModel())
-        backgroundSubtraction = (backgroundSubtraction - np.min(backgroundSubtraction))/np.ptp(backgroundSubtraction)
+        #backgroundSubtraction = (backgroundSubtraction - np.min(backgroundSubtraction))/np.ptp(backgroundSubtraction)
+        backgroundSubtraction = cv2.medianBlur(backgroundSubtraction,3)
 
-        skinColorDetection = self.__skinModel__.detect(currFrame_rgb)
+        backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
+        backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
+
+        skinColorDetection = self.__skinModel__.detect(backgroundSubtraction_rgb)
         morphologyWeight = calcMorphology(backgroundSubtraction)
 
         # showImages([backgroundSubtraction,self.backgroundModel,skinColorDetection,morphologyWeight], ["bgS","bgm","skinD","morphW"])
@@ -53,7 +58,7 @@ class HandDetector:
 
 
     def __combine__(self, MD, SCD, morphW, sB):
-        rate_img = ((MD + SCD + morphW - sB) / 3 * 255).astype(np.uint8)
+        rate_img = ((MD + SCD + 2 * morphW - sB) / 4 * 255).astype(np.uint8)
         ret, final_img = cv2.threshold(rate_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         return final_img
 
