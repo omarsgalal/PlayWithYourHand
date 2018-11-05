@@ -32,7 +32,7 @@ class SkinModel():
             pass
         else:
             raise ValueError('Image mode is not RGB nor HSV')
-            
+
         # newImg = hsv2rgb(img.copy())
         
 
@@ -45,7 +45,7 @@ class SkinModel():
         # pnon = self.nonskinHistoSum[list(flattedImg[:,:2].T)].reshape(img.shape[:-1]) *1.0 / self.Tnon  + 0.000001
 
 
-        mask = np.array(pnon/pskin < threshold,dtype=np.uint8)
+        mask = (pnon/pskin < threshold).astype(np.uint8)
 
         #cv2.imshow('original frame', img)
         #cv2.imshow('skin frame', mask)
@@ -53,11 +53,10 @@ class SkinModel():
         # newImg = (img.transpose(2,0,1) * mask).transpose(1,2,0)
         #     newImg = newImg * mask
 
-        #     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+        # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
         #     mask = cv2.medianBlur(mask,3)
         #     mask = cv2.erode(mask, kernel, iterations = 1)
-        #     mask = cv2.dilate(mask, kernel, iterations = 3)
+        # mask = cv2.dilate(mask, kernel, iterations = 2)
         #     mask = cv2.GaussianBlur(mask, (3, 3), 0)
         # skin = cv2.bitwise_and(newImg, newImg, mask = mask)
-
         return mask
