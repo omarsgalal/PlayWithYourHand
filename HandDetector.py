@@ -20,7 +20,7 @@ class HandDetector:
         pass
 
     def getState(self):
-        return (self.finalOut, self.backgroundSubtraction, self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel')
+        return (self.finalOut, self.backgroundSubtraction * 255, self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel')
     
     def updateSkinBackgroundModel(self):
         backgroundModel = self.getBackgroundModel()
@@ -37,17 +37,22 @@ class HandDetector:
 
         roi, backgroundSubtraction = self.__motionDetection__.detect(frames_gray, currFrame_rgb, self.getSkinBackgroundModel())
         #backgroundSubtraction = (backgroundSubtraction - np.min(backgroundSubtraction))/np.ptp(backgroundSubtraction)
+        
+        # should be global not here
         backgroundSubtraction = cv2.medianBlur(backgroundSubtraction,3)
 
         backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
         backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
+        
+       
+        # cv2.imshow("our background sub",backgroundSubtraction_rgb.astype('uint8'))
 
         skinColorDetection = self.__skinModel__.detect(backgroundSubtraction_rgb)
         morphologyWeight = calcMorphology(backgroundSubtraction)
 
         # showImages([backgroundSubtraction,self.backgroundModel,skinColorDetection,morphologyWeight], ["bgS","bgm","skinD","morphW"])
         # showImages([backgroundSubtraction,backgroundModel,skinColorDetection,morphologyWeight])
-
+        cv2.imshow("skin frame",skinColorDetection*255)
         finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, self.getSkinBackgroundModel())
 
         self.finalOut = finalOut
@@ -58,7 +63,7 @@ class HandDetector:
 
 
     def __combine__(self, MD, SCD, morphW, sB):
-        rate_img = ((MD + SCD + 2 * morphW - sB) / 4 * 255).astype(np.uint8)
+        rate_img = ((MD + SCD + morphW - sB) / 3 * 255).astype(np.uint8)
         ret, final_img = cv2.threshold(rate_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         return final_img
 
@@ -72,8 +77,8 @@ def main():
     vs = Vs().start()
     while(True):
         frames = vs.process()
-        handDetector = HandDetector(frames("rgb")[-2])
-        images, titles = handDetector.detect(frames('gray'),frames('rgb')[0])
+        handDetector = HandDetector(frames("BGR")[-2])
+        images, titles = handDetector.detect(frames('gray'),frames('BGR')[0])
         showImages(images, titles)
         key = cv2.waitKey(10)
         if key == 27 or 0xff:

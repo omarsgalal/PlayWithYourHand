@@ -9,14 +9,14 @@ class AppManager:
     simply this class manages the communication between 4 main classes (VideoSequence, HandDetector, GestureDetector, GameController)"""
     def __init__(self):
         self.vs = Vs().start()
-        self.hd = Hd(self.vs.getFrames("rgb")[-2])
+        self.hd = Hd(self.vs.getFrames("BGR")[-2])
         self.gd = Gd()
         self.gc = Gc()
         pass
 
 
     def showAllImages(self):
-        currFrame = self.vs.getFrames("rgb")[0]
+        currFrame = self.vs.getFrames("BGR")[0]
         # bgModel = self.hd.getBackgroundModel()
         # skinBgModel = self.hd.getSkinBackgroundModel()
         images, titles = self.hd.getState()
@@ -26,7 +26,7 @@ class AppManager:
 
     def step(self):
         frames = self.vs.process()
-        self.hd.detect(frames("gray"), frames("rgb")[0])
+        self.hd.detect(frames("gray"), frames("BGR")[0])
         # should call here GestureDetector then GameController
 
 

@@ -5,9 +5,6 @@ import os
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
 
 
-# skinHisto = np.zeros((256,256,256))
-# nonskinHisto = np.zeros((256,256,256))
-
 class TrainSkinModel():
     # train for both datasets and save the model
     def train(self):
@@ -77,11 +74,16 @@ class TrainSkinModel():
         try:
             skinHisto = np.load("AllModel-skin.npy")
             nonskinHisto = np.load("AllModel-nonskin.npy")
+
         except:
             os.system("wget https://transfer.sh/12sP3e/AllModel-skin.npy")
             os.system("wget https://transfer.sh/TMCm2/AllModel-nonskin.npy")
             skinHisto = np.load("AllModel-skin.npy")
             nonskinHisto = np.load("AllModel-nonskin.npy")
+
+        # to be removed if the new model come
+        skinHisto[0,0,0] = 0
+        nonskinHisto[0,0,0] = 0
 
         return skinHisto,nonskinHisto
 
@@ -89,24 +91,24 @@ class TrainSkinModel():
 
 
     # work only on google colab
-    # def downloadWIDER (self):
-    #     !pip install -U -q PyDrive
-    #     from pydrive.auth import GoogleAuth
-    #     from pydrive.drive import GoogleDrive
-    #     from google.colab import auth
-    #     from oauth2client.client import GoogleCredentials
+    def downloadWIDER (self):
+        os.system("pip install -U -q PyDrive")
+        from pydrive.auth import GoogleAuth
+        from pydrive.drive import GoogleDrive
+        from google.colab import auth
+        from oauth2client.client import GoogleCredentials
 
-    #     auth.authenticate_user()
-    #     gauth = GoogleAuth()
-    #     gauth.credentials = GoogleCredentials.get_application_default()
-    #     drive = GoogleDrive(gauth)
+        auth.authenticate_user()
+        gauth = GoogleAuth()
+        gauth.credentials = GoogleCredentials.get_application_default()
+        drive = GoogleDrive(gauth)
 
-    #     file_id = '0B6eKvaijfFUDQUUwd21EckhUbWs'
-    #     downloaded = drive.CreateFile({'id': file_id})
-    #     downloaded.GetContentFile('WIDER_train.zip')
-    #     !unzip WIDER_train.zip &> abdo.txt
-    #     !pip install progressbar2 &> abdo.txt
-    #     import progressbar
-    #     !wget "https://transfer.sh/P2pwS/wider_face_train_bbx_gt.txt" &> abdo.txt
+        file_id = '0B6eKvaijfFUDQUUwd21EckhUbWs'
+        downloaded = drive.CreateFile({'id': file_id})
+        downloaded.GetContentFile('WIDER_train.zip')
+        os.system("unzip WIDER_train.zip &> abdo.txt")
+        os.system("pip install progressbar2 &> abdo.txt")
+        import progressbar
+        os.system("wget 'https://transfer.sh/P2pwS/wider_face_train_bbx_gt.txt' &> abdo.txt")
 
 

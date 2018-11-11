@@ -8,9 +8,8 @@ from timeit import default_timer
 class MotionDetector():
     def __init__(self, initialBackground):
         self.backgroundModel = initialBackground
-        self.threshold = np.ones_like(self.backgroundModel) #initial value of threshold used in background subtraction
+        self.threshold = np.ones_like(self.backgroundModel[:,:,0]) #initial value of threshold used in background subtraction
         self.threshold *= 30
-        pass
 
 
     def ImageDiff (self, beforeLastFrameGray,lastFrameGray,currentFrameGray):
@@ -23,24 +22,29 @@ class MotionDetector():
         if not objs:
             mROI=[0,0,0,0]
         else:        
+            # not good Kaseb
             mROI=[objs[0][0].start,objs[0][0].stop,objs[0][1].start,objs[0][1].stop]#ymin,ymax,xmin,xmax
         return resultImageDiff, mROI    
 
 
 
     def BackGroundSubtraction(self, currentFrame, mROI, skinBModel):
-        diffBackgroundSubtraction = cv2.absdiff(self.backgroundModel, currentFrame)
+        # eluclidan distanse .... mot abs diff
+        diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)#,keepdims=True)
+        # threshold should be one channel only 
         binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold)#.astype(int) 
-        binaryBackgroundSubtractionGray = cv2.cvtColor(binaryBackgroundSubtraction.astype('uint8'), cv2.COLOR_BGR2GRAY)
+        # not good Kaseb
+        # binaryBackgroundSubtractionGray = cv2.cvtColor(binaryBackgroundSubtraction.astype('uint8'), cv2.COLOR_BGR2GRAY)
         mask1 = np.zeros_like(self.backgroundModel).astype(bool)
         mask1[mROI[0]:mROI[1], mROI[2]:mROI[3], :] = True
         mask2 = np.invert(mask1)
         self.backgroundModel = (mask1 * self.backgroundModel + mask2 * self.backgroundModel * 0.7 + mask2 * 0.3 * currentFrame).astype('uint8')
         #print(background)
-        self.threshold = mask1 * self.threshold + mask2 * 0.7 * self.threshold + 5 * 0.3 * diffBackgroundSubtraction * mask2
+        # threshold should be one channel only
+        self.threshold = mask1[:,:,0] * self.threshold + mask2[:,:,0] * 0.7 * self.threshold + 5 * 0.3 * diffBackgroundSubtraction * mask2[:,:,0]
 
         #print(binaryBackgroundSubtractionGray)
-        return binaryBackgroundSubtractionGray
+        return binaryBackgroundSubtraction.astype('uint8')
 
 
     def detect(self, frames_gray, currFrame_rgb, skinBModel):
@@ -50,4 +54,3 @@ class MotionDetector():
 
     def gitBackgroundModel(self):
         return self.backgroundModel
-    

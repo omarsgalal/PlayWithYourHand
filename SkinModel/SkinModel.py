@@ -4,7 +4,7 @@ import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
 import sys
-sys.path.append('SkinModel')
+sys.path.append('../')
 from TrainSkinModel import TrainSkinModel
 
 # skinHisto = np.zeros((256,256,256))
@@ -25,10 +25,12 @@ class SkinModel():
     def getModels(self):
         return self.skinHisto, self.nonskinHisto
     
-    def detect(self,img,mode='rgb',threshold = 10):
-        if mode=='rgb':
+    def detect(self,img,mode='BGR',threshold = 1):
+        if mode == 'BGR':
+            img = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
+        elif mode=='RGB':
             img = rgb2hsv(img)
-        elif mode=='hsv':
+        elif mode=='HSV':
             pass
         else:
             raise ValueError('Image mode is not RGB nor HSV')
@@ -45,18 +47,29 @@ class SkinModel():
         # pnon = self.nonskinHistoSum[list(flattedImg[:,:2].T)].reshape(img.shape[:-1]) *1.0 / self.Tnon  + 0.000001
 
 
-        mask = (pnon/pskin < threshold).astype(np.uint8)
-
-        #cv2.imshow('original frame', img)
-        #cv2.imshow('skin frame', mask)
+        mask = np.array(pnon/pskin < threshold,dtype=np.uint8)
 
         # newImg = (img.transpose(2,0,1) * mask).transpose(1,2,0)
-        #     newImg = newImg * mask
+        # newImg = newImg * mask
+        mask = cv2.medianBlur(mask,3)
 
-        # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-        #     mask = cv2.medianBlur(mask,3)
-        #     mask = cv2.erode(mask, kernel, iterations = 1)
-        # mask = cv2.dilate(mask, kernel, iterations = 2)
-        #     mask = cv2.GaussianBlur(mask, (3, 3), 0)
-        # skin = cv2.bitwise_and(newImg, newImg, mask = mask)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+        # mask = cv2.medianBlur(mask,3)
+        # kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        # mask = cv2.erode(mask, np.ones((2,2),dtype='uint8'), iterations = 1)
+        mask = cv2.dilate(mask, kernel, iterations = 3)
         return mask
+
+def main():
+    from VideoSequence import VideoSequence as Vs
+    from utils import showImages
+    s = SkinModel()
+    vs = Vs().start()
+    while(True):
+        frames = vs.process()
+        img = s.detect(frames("BGR")[-2])
+        showImages([img*255], ["skin detector Model only"])
+        if cv2.waitKey(1) == 27: 
+            break  # esc to quit
+if __name__ == "__main__":
+    main()
