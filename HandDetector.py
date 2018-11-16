@@ -20,7 +20,7 @@ class HandDetector:
         pass
 
     def getState(self):
-        return (self.finalOut, self.backgroundSubtraction * 255, self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel')
+        return (self.finalOut, self.backgroundSubtraction * 255, self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel','skinFrameModel')
     
     def updateSkinBackgroundModel(self):
         backgroundModel = self.getBackgroundModel()
@@ -38,33 +38,26 @@ class HandDetector:
         roi, backgroundSubtraction = self.__motionDetection__.detect(frames_gray, currFrame_rgb, self.getSkinBackgroundModel())
         #backgroundSubtraction = (backgroundSubtraction - np.min(backgroundSubtraction))/np.ptp(backgroundSubtraction)
         
-        # should be global not here
+        # should be global not here KASEB
         backgroundSubtraction = cv2.medianBlur(backgroundSubtraction,3)
 
-        backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
-        backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
-        
-       
-        # cv2.imshow("our background sub",backgroundSubtraction_rgb.astype('uint8'))
-
-        skinColorDetection = self.__skinModel__.detect(backgroundSubtraction_rgb)
+        # backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
+        # backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
+        skinColorDetection = self.__skinModel__.detect(currFrame_rgb) * backgroundSubtraction
         morphologyWeight = calcMorphology(backgroundSubtraction)
 
-        # showImages([backgroundSubtraction,self.backgroundModel,skinColorDetection,morphologyWeight], ["bgS","bgm","skinD","morphW"])
-        # showImages([backgroundSubtraction,backgroundModel,skinColorDetection,morphologyWeight])
-        cv2.imshow("skin frame",skinColorDetection*255)
         finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, self.getSkinBackgroundModel())
 
         self.finalOut = finalOut
         self.backgroundSubtraction = backgroundSubtraction
         self.morphologyWeight = morphologyWeight
+        self.skinColorDetection = skinColorDetection
         return self.getState()
-        # cv2.imshow("res", res)
 
 
     def __combine__(self, MD, SCD, morphW, sB):
         rate_img = ((MD + SCD + morphW - sB) / 3 * 255).astype(np.uint8)
-        ret, final_img = cv2.threshold(rate_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        _ , final_img = cv2.threshold(rate_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         return final_img
 
 
