@@ -56,8 +56,9 @@ class HandDetector:
 
 
     def __combine__(self, MD, SCD, morphW, sB):
-        rate_img = ((MD + SCD + morphW - sB) / 3 * 255).astype(np.uint8)
-        _ , final_img = cv2.threshold(rate_img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        rate_img = (np.maximum((MD + SCD + morphW - sB), 0.0) / 3 * 255).astype(np.uint8)
+        # rate_img = (MD + morphW).astype(np.uint8)
+        _ , final_img = cv2.threshold(rate_img,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         return final_img
 
 
@@ -76,5 +77,7 @@ def main():
         key = cv2.waitKey(10)
         if key == 27 or 0xff:
             break
+
+            
 if __name__ == "__main__":
     main()

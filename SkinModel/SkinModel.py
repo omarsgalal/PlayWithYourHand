@@ -5,7 +5,7 @@ import os
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
 import sys
 sys.path.append('../')
-from TrainSkinModel import TrainSkinModel
+from SkinModel.TrainSkinModel import TrainSkinModel
 
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))
