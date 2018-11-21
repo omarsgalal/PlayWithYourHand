@@ -12,14 +12,8 @@ class VideoSequence:
         
     def start(self):
         self.__cap__ = cv2.VideoCapture(0)
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
-        self.__beforePrev__ = self.__readFrame__()
+        for i in range(10):
+            self.__beforePrev__ = self.__readFrame__()
 
         self.__beforePrev__ = self.__readFrame__()
         self.__beforePrev_g__ = toGray(self.__beforePrev__)
