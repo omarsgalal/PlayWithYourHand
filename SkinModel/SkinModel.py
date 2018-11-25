@@ -26,6 +26,10 @@ class SkinModel():
         return self.skinHisto, self.nonskinHisto
     
     def detect(self,img,mode='BGR',threshold = 1):
+
+        #trail
+        return self.detectNonProbability(img)
+
         if mode == 'BGR':
             img = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
         elif mode=='RGB':
@@ -58,6 +62,16 @@ class SkinModel():
         # kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         # mask = cv2.erode(mask, np.ones((2,2),dtype='uint8'), iterations = 1)
         mask = cv2.dilate(mask, kernel, iterations = 3)
+        return mask
+
+    def detectNonProbability(self, img):
+        mask1 = np.log(img[:, :, 2] / img[:, :, 1])
+        mask2 = np.log(img[:, :, 0] / img[:, :, 1])
+
+        mask1 = (mask1 > 0.15) * (mask1 < 0.8)
+        mask2 = (mask2 > -2) * (mask2 < 0.3)
+
+        mask = (mask1 * mask2 ).astype('uint8')
         return mask
 
 def main():

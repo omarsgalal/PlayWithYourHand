@@ -18,7 +18,10 @@ class MotionDetector():
         binary1 = diff1 > threshold
         binary2 = diff2 > threshold
         resultImageDiff = binary1 * binary2
-        resultImageDiff = cv2.erode(resultImageDiff.astype('uint8'), np.ones((3,3),dtype='uint8'), iterations = 1)
+        resultImageDiff = cv2.erode(resultImageDiff.astype('uint8'), np.ones((3,3),dtype='uint8'), iterations = 2)
+
+        cv2.imshow('imgdiff', (resultImageDiff * 255).astype('uint8'))
+
         #resultImageDiff, _ = ndimage.measurements.label(resultImageDiff)
         objs = ndimage.find_objects(resultImageDiff)
 
@@ -42,15 +45,15 @@ class MotionDetector():
 
 
 
-    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.8):
+    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.9):
         diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)#,keepdims=True)
         # one cancelled rule for using skin background model while subtracting
         # skinBModel = 2 * skinBModel + 1
         binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold ).astype('uint8')#  / skinBModel)#.astype(int)
-        # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
-        
-        # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
-        
+
+        #trial to fill gaps due to subtraction Samir
+        # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)
+        # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)        
 
         mask1 = np.zeros_like(self.backgroundModel).astype(bool)
         mask1[mROI[0]:mROI[1], mROI[2]:mROI[3], :] = True
@@ -60,12 +63,12 @@ class MotionDetector():
 
         self.threshold = mask1[:,:,0] * self.threshold + mask2[:,:,0] * alpha * self.threshold + 5 * (1 - alpha) * diffBackgroundSubtraction * mask2[:,:,0]
 
-        return binaryBackgroundSubtraction.astype('uint8')
+        return binaryBackgroundSubtraction.astype('uint8'), mask1[:, :, 0]
 
 
     def detect(self, frames_gray, currFrame_rgb, skinBModel):
         resultImageDiff, mROI = self.ImageDiff(frames_gray[1],frames_gray[2],frames_gray[0])
-        resultBackgroundSub = self.BackGroundSubtraction(currFrame_rgb, mROI, skinBModel)
+        resultBackgroundSub, mROI = self.BackGroundSubtraction(currFrame_rgb, mROI, skinBModel)
         return mROI, resultBackgroundSub
 
     def gitBackgroundModel(self):

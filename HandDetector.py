@@ -44,9 +44,14 @@ class HandDetector:
         # backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
         # backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
         skinColorDetection = self.__skinModel__.detect(currFrame_rgb) * backgroundSubtraction
+
+        #Omar Trial
+        skinBackgroundModel = self.getSkinBackgroundModel()
+        #backgroundSubtraction += roi * skinBackgroundModel
+
         morphologyWeight = calcMorphology(backgroundSubtraction)
 
-        finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, self.getSkinBackgroundModel())
+        finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, skinBackgroundModel)
 
         self.finalOut = finalOut
         self.backgroundSubtraction = backgroundSubtraction
