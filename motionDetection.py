@@ -40,7 +40,6 @@ class MotionDetector():
         else:        
             # not good Kaseb
             mROI=[objs[0][0].start,objs[0][0].stop,objs[0][1].start,objs[0][1].stop]#ymin,ymax,xmin,xmax
-
         return resultImageDiff, mROI
 
 
@@ -54,6 +53,18 @@ class MotionDetector():
         #trial to fill gaps due to subtraction Samir
         # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)
         # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)        
+        
+
+        # mask = cv2.erode(skinBModel, np.ones((7,7)), iterations = 2)
+        # mask = cv2.dilate(mask, np.ones((15,15)), iterations = 3)
+        skinBModelT = mask / 3 + 1
+        
+        binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold * skinBModelT ).astype('uint8')#  / skinBModel)#.astype(int)
+        # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
+        
+        # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
+        
+
 
         mask1 = np.zeros_like(self.backgroundModel).astype(bool)
         mask1[mROI[0]:mROI[1], mROI[2]:mROI[3], :] = True
@@ -67,6 +78,7 @@ class MotionDetector():
 
 
     def detect(self, frames_gray, currFrame_rgb, skinBModel):
+        # why we don't use the Image Diffrence?
         resultImageDiff, mROI = self.ImageDiff(frames_gray[1],frames_gray[2],frames_gray[0])
         resultBackgroundSub, mROI = self.BackGroundSubtraction(currFrame_rgb, mROI, skinBModel)
         return mROI, resultBackgroundSub
