@@ -57,7 +57,7 @@ class MotionDetector():
 
         # mask = cv2.erode(skinBModel, np.ones((7,7)), iterations = 2)
         # mask = cv2.dilate(mask, np.ones((15,15)), iterations = 3)
-        skinBModelT = mask / 3 + 1
+        skinBModelT = -1 * skinBModel / 3 + 1
         
         binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold * skinBModelT ).astype('uint8')#  / skinBModel)#.astype(int)
         # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)

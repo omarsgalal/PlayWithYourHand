@@ -43,6 +43,8 @@ class HandDetector:
 
         # backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
         # backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
+
+        #multiply by background or not (important)
         skinColorDetection = self.__skinModel__.detect(currFrame_rgb) * backgroundSubtraction
 
         #Omar Trial
