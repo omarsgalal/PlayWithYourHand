@@ -20,7 +20,7 @@ class HandDetector:
         pass
 
     def getState(self):
-        return (self.finalOut, self.backgroundSubtraction * 255, self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel','skinFrameModel')
+        return (self.finalOut, (self.backgroundSubtraction * 255).astype('uint8'), self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel','skinFrameModel')
     
     def updateSkinBackgroundModel(self):
         backgroundModel = self.getBackgroundModel()
@@ -39,13 +39,13 @@ class HandDetector:
         #backgroundSubtraction = (backgroundSubtraction - np.min(backgroundSubtraction))/np.ptp(backgroundSubtraction)
         
         # should be global not here KASEB
-        backgroundSubtraction = cv2.medianBlur(backgroundSubtraction,3)
+        #backgroundSubtraction = cv2.medianBlur(backgroundSubtraction,3)
 
         # backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
         # backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
 
         #multiply by background or not (important)
-        skinColorDetection = self.__skinModel__.detect(currFrame_rgb) * backgroundSubtraction
+        skinColorDetection = self.__skinModel__.detect(currFrame_rgb) #* backgroundSubtraction
 
         #Omar Trial
         skinBackgroundModel = self.getSkinBackgroundModel()
@@ -63,12 +63,26 @@ class HandDetector:
 
 
     def __combine__(self, MD, SCD, morphW, sB):
+
+        #omar trial
+        return self.__combine2__(MD, SCD, sB)
+
         rate_img = (np.maximum((MD + SCD + morphW - sB), 0.0) / 3 * 255).astype(np.uint8)
         # rate_img = (MD + morphW).astype(np.uint8)
         _ , final_img = cv2.threshold(rate_img,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         return final_img
 
-
+    #omar trial
+    def __combine2__(self, MD, SCD, sB):
+        skinDifference = np.maximum(SCD.astype(float) - cv2.dilate(sB, np.ones((7,7),dtype='float'), iterations = 3), 0)
+        #skinDifference = cv2.dilate(skinDifference, np.ones((3, 3)), iterations = 1)
+        cv2.imshow('skindiff', skinDifference)
+        totalDifference = np.minimum((skinDifference + 0.9 * MD) * 255, 255).astype('uint8')
+        cv2.imshow('before otsu', totalDifference)
+        _ , final_img = cv2.threshold(totalDifference,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        final_img = cv2.erode(final_img, np.ones((2, 2)), iterations = 1)
+        final_img = cv2.medianBlur(final_img, 5)
+        return final_img
 
 
 

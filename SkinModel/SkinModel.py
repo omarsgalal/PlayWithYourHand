@@ -65,11 +65,11 @@ class SkinModel():
         return mask
 
     def detectNonProbability(self, img):
-        mask1 = np.log(img[:, :, 2] / img[:, :, 1])
-        mask2 = np.log(img[:, :, 0] / img[:, :, 1])
+        mask1 = np.log((img[:, :, 2] / (img[:, :, 1] + 0.00001)) + 0.00001)
+        mask2 = np.log((img[:, :, 0] / (img[:, :, 1] + 0.00001)) + 0.00001)
 
-        mask1 = (mask1 > 0.15) * (mask1 < 0.8)
-        mask2 = (mask2 > -2) * (mask2 < 0.3)
+        mask1 = (mask1 > 0.15) * (mask1 < 1.1)
+        mask2 = (mask2 > -4) * (mask2 < 0.3)
 
         mask = (mask1 * mask2 ).astype('uint8')
         return mask

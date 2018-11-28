@@ -44,11 +44,11 @@ class MotionDetector():
 
 
 
-    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.9):
+    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.93):
         diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)#,keepdims=True)
         # one cancelled rule for using skin background model while subtracting
         # skinBModel = 2 * skinBModel + 1
-        binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold ).astype('uint8')#  / skinBModel)#.astype(int)
+        #binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold ).astype('uint8')#  / skinBModel)#.astype(int)
 
         #trial to fill gaps due to subtraction Samir
         # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)
@@ -57,24 +57,29 @@ class MotionDetector():
 
         # mask = cv2.erode(skinBModel, np.ones((7,7)), iterations = 2)
         # mask = cv2.dilate(mask, np.ones((15,15)), iterations = 3)
-        skinBModelT = -1 * skinBModel / 3 + 1
+
+        mask1 = np.zeros_like(self.backgroundModel).astype(bool)
+        mask1[mROI[0]:mROI[1], mROI[2]:mROI[3], :] = True
+        mask2 = np.invert(mask1)
+
+        skinBModelT = -1 * skinBModel.astype(float) * mask1[:, :, 0] / 2 + 1
         
-        binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold * skinBModelT ).astype('uint8')#  / skinBModel)#.astype(int)
+        binaryBackgroundSubtraction = (diffBackgroundSubtraction > (self.threshold * skinBModelT) ).astype(float)#  / skinBModel)#.astype(int)
+        binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
         # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
         
         # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
         
 
 
-        mask1 = np.zeros_like(self.backgroundModel).astype(bool)
-        mask1[mROI[0]:mROI[1], mROI[2]:mROI[3], :] = True
+        
         cv2.imshow('mroi', (mask1 * 255).astype('uint8'))
-        mask2 = np.invert(mask1)
         self.backgroundModel = (mask1 * self.backgroundModel + mask2 * self.backgroundModel * alpha + mask2 * (1 - alpha) * currentFrame).astype('uint8')
 
         self.threshold = mask1[:,:,0] * self.threshold + mask2[:,:,0] * alpha * self.threshold + 5 * (1 - alpha) * diffBackgroundSubtraction * mask2[:,:,0]
 
-        return binaryBackgroundSubtraction.astype('uint8'), mask1[:, :, 0]
+        return binaryBackgroundSubtraction, mask1[:, :, 0]
+
 
 
     def detect(self, frames_gray, currFrame_rgb, skinBModel):
