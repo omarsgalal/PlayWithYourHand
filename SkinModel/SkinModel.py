@@ -19,6 +19,9 @@ class SkinModel():
         self.skinHistoSum = np.sum(self.skinHisto,axis=2)
         self.nonskinHistoSum = np.sum(self.nonskinHisto,axis=2)
 
+        self.lower = np.array([5, 5, 80], dtype = "uint8")
+        self.upper = np.array([50, 175, 250], dtype = "uint8")
+
         
     def getModels(self):
         return self.skinHisto, self.nonskinHisto
@@ -72,15 +75,63 @@ class SkinModel():
         mask = (mask1 * mask2 ).astype('uint8')
         return mask
 
+
+        
+    def detectRange(self,img,mode='BGR'):
+        if mode == 'BGR':
+            img = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
+        elif mode=='RGB':
+            img = rgb2hsv(img)
+        elif mode=='HSV':
+            pass
+        else:
+            raise ValueError('Image mode is not RGB nor HSV')
+
+        skinMask = cv2.inRange(img, self.lower, self.upper)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        skinMask = cv2.dilate(skinMask, kernel, iterations = 2)
+        skinMask = cv2.erode(skinMask, kernel, iterations = 2)
+        # skinMask = cv2.GaussianBlur(skinMask, (3, 3), 0)
+        # print(np.max(skinMask),np.min(skinMask))
+        return (skinMask/255.0).astype('uint8')
+
+
 def main():
-    from VideoSequence import VideoSequence as Vs
-    from utils import showImages
     s = SkinModel()
-    vs = Vs().start()
+    # pskin = s.skinHisto *1.0 / s.Tskin  + 0.00000000001
+    # pnon = s.nonskinHisto*1.0 / s.Tnon  + 0.000001
+    # # for x in range(100):
+    # x = 1
+    # mask = np.array(pnon/pskin < x,dtype=np.uint8)
+    # obj = ndimage.find_objects(mask)
+    # if obj:
+    #     print(mask[obj[0]].shape)
+    #     print(obj,np.max(mask))
+
+
+    # resultImageDiff, _ = ndimage.measurements.label(mask)
+    # objs = ndimage.find_objects(resultImageDiff)
+
+    # max_area = 0
+    # mROI=[0,0,0,0]
+    # for obj in objs:
+    #     area = (obj[0].start - obj[0].stop ) * (obj[1].start - obj[1].stop) 
+    #     if area > max_area:
+    #         max_area = area
+    #         # mROI = [obj[0].start, obj[0].stop, obj[1].start, obj[1].stop]#ymin,ymax,xmin,xmax
+    #         mROI = obj
+
+    # print (mROI)
+
+
+    vs = cv2.VideoCapture(0)
     while(True):
-        frames = vs.process()
-        img = s.detect(frames("BGR")[-2])
-        showImages([img*255], ["skin detector Model only"])
+        # frames = vs.process()
+        img = vs.read()[1]
+        # frames = [s.detect(img,x) for x in range(0,1,0.1)]
+        # for x in range(10):
+        frame = s.detect(img)
+        cv2.imshow("x= {}",cv2.bitwise_and(img,img,mask = frame))
         if cv2.waitKey(1) == 27: 
             break  # esc to quit
 if __name__ == "__main__":
