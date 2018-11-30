@@ -76,7 +76,7 @@ class SkinModel():
         return mask
 
 
-        
+
     def detectRange(self,img,mode='BGR'):
         if mode == 'BGR':
             img = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
@@ -94,6 +94,42 @@ class SkinModel():
         # skinMask = cv2.GaussianBlur(skinMask, (3, 3), 0)
         # print(np.max(skinMask),np.min(skinMask))
         return (skinMask/255.0).astype('uint8')
+
+    def detectRangeAllSpaces (self,img,mode='BGR'):
+        """https://arxiv.org/pdf/1708.02694.pdf"""
+        """https://www.researchgate.net/publication/26593885_A_Skin_Detection_Approach_Based_on_Color_Distance_Map"""
+        if mode == 'BGR':
+            rgb = img[...,::-1]
+            hsv = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
+        elif mode=='RGB':
+            rgb = img
+            hsv = rgb2hsv(img)
+        elif mode=='HSV':
+            rgb = hsv2rgb(img)
+            hsv = img
+        else:
+            raise ValueError('Image mode is not RGB nor HSV')
+
+        lowerHSV = np.array([0, 0, 0], dtype = "uint8")
+        upperHSV = np.array([50, 175, 255], dtype = "uint8")
+
+        lowerRGB = np.array([95, 40, 20], dtype = "uint8")
+        upperRGB = np.array([255, 255, 255], dtype = "uint8")
+
+        mask1 = cv2.inRange(hsv, lowerHSV, upperHSV)
+        mask2 = cv2.inRange(rgb, lowerRGB, upperRGB)
+        #  R > G and R > B and | R - G | > 15 and A > 15
+        mask3 = (rgb[:,:,0] > rgb[:,:,1]) * (rgb[:,:,0] > rgb[:,:,2]) * ((rgb[:,:,0] - rgb[:,:,1]) > 15)
+
+        skinMask =  mask1 * mask2 * mask3
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        skinMask = cv2.dilate(skinMask, kernel, iterations = 2)
+        skinMask = cv2.erode(skinMask, kernel, iterations = 2)
+        return skinMask
+        
+
+
 
 
 def main():
@@ -130,7 +166,7 @@ def main():
         img = vs.read()[1]
         # frames = [s.detect(img,x) for x in range(0,1,0.1)]
         # for x in range(10):
-        frame = s.detect(img)
+        frame = s.detectRangeAllSpaces(img)
         cv2.imshow("x= {}",cv2.bitwise_and(img,img,mask = frame))
         if cv2.waitKey(1) == 27: 
             break  # esc to quit
