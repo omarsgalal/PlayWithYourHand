@@ -5,7 +5,7 @@ from SkinModel.SkinModel import SkinModel
 from morphology import MorphologyDetector
 from motionDetection import MotionDetector
 from utils import get3DMask
-
+from scipy import ndimage
 
 
 class HandDetector:
@@ -16,6 +16,7 @@ class HandDetector:
         self.__morphologyWeight = MorphologyDetector()
         self.__motionDetection__ = MotionDetector(initialBackground)
         self.__skinBackgroundModel__ = None
+        self.handCout = 0 
 
     def getState(self):
         return (self.finalOut, (self.backgroundSubtraction * 255).astype('uint8'), self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel','skinFrameModel')
@@ -50,8 +51,9 @@ class HandDetector:
         #backgroundSubtraction += roi * skinBackgroundModel
 
         morphologyWeight = calcMorphology(backgroundSubtraction)
+        handOnly = self.handWithoutFace(currFrame_rgb)
 
-        finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, skinBackgroundModel)
+        finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, skinBackgroundModel,handOnly)
 
         self.finalOut = finalOut
         self.backgroundSubtraction = backgroundSubtraction
@@ -59,11 +61,31 @@ class HandDetector:
         self.skinColorDetection = skinColorDetection
         return self.getState()
 
+    def handWithoutFace(self,img):
+        frame = self.__skinModel__.detectRangeAllSpaces(img)
+        cv2.imshow("handWithoutFaceFrame",frame*255)
+        
+        while self.handCout<25:
+            mask = frame.copy()
+            mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
+            mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)
+            resultImageDiff, _ = ndimage.measurements.label(mask)
+            objs = ndimage.find_objects(resultImageDiff)
+            if (len(objs) == 1):
+                print(self.handCout)
+                break
+            self.handCout += 1
+        cv2.imshow("handWithoutFace",mask*255)
+        if self.handCout >= 25:
+            self.handCout = 15
 
-    def __combine__(self, MD, SCD, morphW, sB):
+        return mask
+
+
+    def __combine__(self, MD, SCD, morphW, sB,Hand):
 
         #omar trial
-        return self.__combine2__(MD, SCD, sB)
+        return self.__combine2__(MD, SCD, sB,Hand)
 
         rate_img = (np.maximum((MD + SCD + morphW - sB), 0.0) / 3 * 255).astype(np.uint8)
         # rate_img = (MD + morphW).astype(np.uint8)
@@ -71,10 +93,11 @@ class HandDetector:
         return final_img
 
     #omar trial
-    def __combine2__(self, MD, SCD, sB):
-        skinDifference = np.maximum(SCD.astype(float) - cv2.dilate(sB, np.ones((7,7),dtype='float'), iterations = 3), 0)
+    def __combine2__(self, MD, SCD, sB,Hand):
+        skinDifference = np.maximum(SCD.astype(float) + Hand - cv2.dilate(sB, np.ones((7,7),dtype='float'), iterations = 3), 0)
         #skinDifference = cv2.dilate(skinDifference, np.ones((3, 3)), iterations = 1)
         cv2.imshow('skindiff', skinDifference)
+        # skinDifference (From 2 to 0) + 0.9 * MD(From 1 to 0) supposed to devide by (2.9) then * 255 KASEB
         totalDifference = np.minimum((skinDifference + 0.9 * MD) * 255, 255).astype('uint8')
         cv2.imshow('before otsu', totalDifference)
         _ , final_img = cv2.threshold(totalDifference,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)

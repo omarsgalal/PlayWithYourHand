@@ -169,6 +169,11 @@ def main():
         # frames = [s.detect(img,x) for x in range(0,1,0.1)]
         # for x in range(10):
         frame = s.detectRangeAllSpaces(img)
+        # cv2.imshow("skin frame",frame*255)
+        # mask = frame.copy()
+        # mask = cv2.erode(mask, np.ones((7,7)), iterations = 5)
+        # mask = cv2.dilate(mask, np.ones((7,7)), iterations = 5)
+            
         while i<25:
             mask = frame.copy()
             mask = cv2.erode(mask, np.ones((7,7)), iterations = i)
