@@ -4,7 +4,7 @@ import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
 from TrainSkinModel import TrainSkinModel
-
+from scipy import ndimage
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))
 
@@ -161,14 +161,30 @@ def main():
 
 
     vs = cv2.VideoCapture(0)
+    i = 0
     while(True):
         # frames = vs.process()
         img = vs.read()[1]
+        img = cv2.flip(img, 1)
         # frames = [s.detect(img,x) for x in range(0,1,0.1)]
         # for x in range(10):
         frame = s.detectRangeAllSpaces(img)
-        cv2.imshow("x= {}",cv2.bitwise_and(img,img,mask = frame))
+        while i<25:
+            mask = frame.copy()
+            mask = cv2.erode(mask, np.ones((7,7)), iterations = i)
+            mask = cv2.dilate(mask, np.ones((7,7)), iterations = i)
+            resultImageDiff, _ = ndimage.measurements.label(mask)
+            objs = ndimage.find_objects(resultImageDiff)
+            if (len(objs) == 1):
+                print(i)
+                break
+            i += 1
+        i %= 25
+
+        cv2.imshow("frame",img)
+        cv2.imshow("x= {}",cv2.bitwise_and(img,img,mask = mask))
         if cv2.waitKey(1) == 27: 
             break  # esc to quit
+            
 if __name__ == "__main__":
     main()
