@@ -18,7 +18,7 @@ class MotionDetector():
         binary1 = diff1 > threshold
         binary2 = diff2 > threshold
         resultImageDiff = binary1 * binary2
-        resultImageDiff = cv2.erode(resultImageDiff.astype('uint8'), np.ones((3,3),dtype='uint8'), iterations = 2)
+        resultImageDiff = cv2.erode(resultImageDiff.astype('uint8'), np.ones((5, 5),dtype='uint8'), iterations = 2)
 
         cv2.imshow('imgdiff', (resultImageDiff * 255).astype('uint8'))
 
@@ -44,7 +44,7 @@ class MotionDetector():
 
 
 
-    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.93):
+    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.9):
         diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)#,keepdims=True)
         # one cancelled rule for using skin background model while subtracting
         # skinBModel = 2 * skinBModel + 1
@@ -66,6 +66,9 @@ class MotionDetector():
         
         binaryBackgroundSubtraction = (diffBackgroundSubtraction > (self.threshold * skinBModelT) ).astype(float)#  / skinBModel)#.astype(int)
         binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
+        
+
+
         # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
         
         # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)

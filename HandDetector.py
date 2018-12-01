@@ -16,8 +16,6 @@ class HandDetector:
         self.__morphologyWeight = MorphologyDetector()
         self.__motionDetection__ = MotionDetector(initialBackground)
         self.__skinBackgroundModel__ = None
-        
-        pass
 
     def getState(self):
         return (self.finalOut, (self.backgroundSubtraction * 255).astype('uint8'), self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel','skinFrameModel')
