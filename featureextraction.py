@@ -45,9 +45,9 @@ class FeatureExtraction:
 			end = np.array(contour[e][0])
 			middle = np.array(contour[f][0])
 			defect = np.empty((3, 2), dtype=int)
-			defect[0] = start
-			defect[1] = end
-			defect[2] = middle
+			defect[0] = np.flip(start, axis=0)
+			defect[1] = np.flip(end, axis=0)
+			defect[2] = np.flip(middle, axis=0)
 			convex_defects.append(defect)
 
 		return convex_defects, contour
@@ -68,11 +68,13 @@ if __name__ == "__main__":
 	f = FeatureExtraction()
 	imgrgb = cv2.imread('image2.jpg')
 	img = cv2.cvtColor(imgrgb, cv2.COLOR_BGR2GRAY)
+	print(img.shape)
 	defects, contour = f.convexDefects(img)
 	for defect in defects:
+		print(tuple(defect[0]))
 		cv2.circle(imgrgb,tuple(defect[0]),5,[0,0,255],-1)
 		cv2.circle(imgrgb,tuple(defect[1]),5,[0,0,255],-1)
 		cv2.circle(imgrgb,tuple(defect[2]),5,[255,0,0],-1)
 
 		cv2.imshow('con', imgrgb)
-		cv2.waitKey(1000)
+		cv2.waitKey(500)
