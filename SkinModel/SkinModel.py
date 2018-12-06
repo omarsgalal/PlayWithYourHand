@@ -3,7 +3,8 @@ import cv2
 import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
-from TrainSkinModel import TrainSkinModel
+#from TrainSkinModel import TrainSkinModel
+from SkinModel.TrainSkinModel import TrainSkinModel
 from scipy import ndimage
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))
@@ -22,7 +23,6 @@ class SkinModel():
         self.lower = np.array([5, 5, 80], dtype = "uint8")
         self.upper = np.array([50, 175, 250], dtype = "uint8")
 
-        
     def getModels(self):
         return self.skinHisto, self.nonskinHisto
     
@@ -72,7 +72,7 @@ class SkinModel():
         mask1 = (mask1 > 0.15) * (mask1 < 1.1)
         mask2 = (mask2 > -4) * (mask2 < 0.3)
 
-        mask = (mask1 * mask2 ).astype('uint8')
+        mask = (mask1 * mask2).astype('uint8')
         return mask
 
 
