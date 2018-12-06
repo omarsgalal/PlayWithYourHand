@@ -105,8 +105,10 @@ class GestureDetector:
 		if(matches>25):
 			return True		
 	def match(self, img1):
-		kpInput, desInput = self.sift.detectAndCompute(img1,None)
-		print("\n\n\n\n\n")
+		kp1, des1 = self.sift.detectAndCompute(img1,None)
+		img2 = cv2.imread('openhand.jpg',0)
+		kp2, des2 = self.sift.detectAndCompute(img2,None)
+		'''print("\n\n\n\n\n")
 		if(self.matchOpenHand(desInput)):
 			print("openHand")
 			return
@@ -119,7 +121,7 @@ class GestureDetector:
 		if(self.matchKnife(desInput)):
 			print("Knife")
 			return	
-		#print("No Match")			
+		#print("No Match")	'''		
 		'''OpenHand = cv2.imread('openhand.jpg',0) # trainImage
 		fist=cv2.imread('fist.jpg',0)
 		knife=cv2.imread('knife.jpg',0)
@@ -184,19 +186,15 @@ class GestureDetector:
 
 
 		# BFMatcher with default params
-		'''bf = cv2.BFMatcher()
-		matches = bf.knnMatch(des1,des2, k=2)
-		# Apply ratio test
-		good = []
-		for m,n in matches:
-		    if m.distance < 0.6*n.distance:
-		        good.append([m])
-		# cv.drawMatchesKnn expects list of lists as matches.
-		img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,None,flags=2)
+		bf = cv2.BFMatcher()
+		matches = bf.match(des1,des2)
+		matches = sorted(matches, key=lambda x:x.distance)
+		matching_result = cv2.drawMatches(img1, kp1, img2, kp2, matches[:5], None, flags=2)
+		cv2.imshow("image", matching_result)
 		#print((des1[0].shape))
 
 		# FLANN parameters
-		FLANN_INDEX_KDTREE = 0
+		'''FLANN_INDEX_KDTREE = 0
 		index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
 		search_params = dict(checks=50)   # or pass empty dictionary
 
@@ -224,4 +222,54 @@ class GestureDetector:
 		#return (img3,"SIFTS")
 		#return (img3,"SIFT")
 
-    
+
+
+
+	def matchReady(self, img):
+		kp_img, des_img = self.sift.detectAndCompute(img,None)
+		
+		open_hand = cv2.imread('openhand.jpg',0)
+		kp_openhand, des_openhand = self.sift.detectAndCompute(open_hand,None)
+		
+		fist = cv2.imread('fist.jpg',0)
+		kp_fist, des_fist = self.sift.detectAndCompute(fist,None)
+		
+		knife = cv2.imread('knife.jpg',0)
+		kp_knife, des_knife = self.sift.detectAndCompute(knife,None)
+		
+		zero = cv2.imread('zeroshaped.jpg',0)
+		kp_zero, des_zero = self.sift.detectAndCompute(zero,None)
+
+
+		bf = cv2.BFMatcher()
+
+		num_points = 20
+		
+		matches_openhand = bf.match(des_img, des_openhand)
+		matches_openhand = sorted(matches_openhand, key=lambda x:x.distance)
+		for i  in range(len(matches_openhand)):
+			if matches_openhand[i].distance	>0.5:
+				matches_openhand[i].erase() 
+
+		matches_fist = bf.match(des_img, des_fist)
+		matches_fist = sorted(matches_fist, key=lambda x:x.distance)[:num_points]
+
+		matches_knife = bf.match(des_img, des_knife)
+		matches_knife = sorted(matches_knife, key=lambda x:x.distance)[:num_points]
+
+		matches_zero = bf.match(des_img, des_zero)
+		matches_zero = sorted(matches_zero, key=lambda x:x.distance)[:num_points]
+
+		sum_openhand = sum(x.distance for x in matches_openhand)
+		sum_fist = sum(x.distance for x in matches_fist)
+		sum_zero = sum(x.distance for x in matches_zero)
+		sum_knife = sum(x.distance for x in matches_knife)
+
+
+		sums = np.array([sum_openhand, sum_fist, sum_zero, sum_knife])
+		gestures = ["openhand", "fist", "zero", "knife"]
+
+		max_sum = np.argmin(sums)
+
+		print(gestures[max_sum])
+		print (sums)
