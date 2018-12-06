@@ -18,13 +18,13 @@ class GestureRecognizer:
         print('hullCntRatio=',hullCntRatio)
         print('maxTwoCntRatio=',maxTwoCntRatio)
         if numDefects >= 2:
-            return 'moving'
+            return 'PALM'
         elif lengthRatio > 2:
-            return 'pause'
+            return 'KNIFE'
         elif maxTwoCntRatio < 250 :
-            return 'right click'
+            return 'ZERO'
         elif lengthRatio < 1.45 and lengthRatio > 0.8 and hullCntRatio > 0.9 and hullCntRatio < 1.1: # square like
-            return 'left click'
+            return 'FIST'
         else:
             return 'NO SHAPE'
 
@@ -63,16 +63,22 @@ class GestureRecognizer:
             f_defects = self.__findDefects__(roi, maxCnt)
             print(f_defects)
             cv2.imshow('hand_gestureRecog',hand)
-            return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio)
+            return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio), self.__contourCenter__(maxCnt)
         except Exception as e:
             print(e)
-            return 'NO SHAPE'
+            return 'NO SHAPE', (0,0)
 
     def __preProcessing__(self, mask):
         kernel = np.ones((3,3),np.uint8)
         mask = cv2.dilate(mask,kernel,iterations = 4)
         mask = cv2.GaussianBlur(mask,(5,5),100)
         return mask
+
+    def __contourCenter__(self, cnt):
+        M = cv2.moments(cnt)
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        return cX, cY
 
     def __findContoursSorted__(self, hand, roi):
         _,contours,hierarchy= cv2.findContours(hand,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
