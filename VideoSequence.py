@@ -49,7 +49,9 @@ class VideoSequence:
             return (self.__curr_g__, self.__beforePrev_g__, self.__prev_g__)
         else:
             raise Exception("Not supported frames of type {}, only supproted are 'BGR', 'gray'".format(fType))
-
+    
+    def __del__(self):
+        self.__cap__.release()
 
 
 if __name__ == "__main__":
