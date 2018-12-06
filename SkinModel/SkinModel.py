@@ -3,8 +3,7 @@ import cv2
 import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
-import sys
-sys.path.append('../')
+#from TrainSkinModel import TrainSkinModel
 from SkinModel.TrainSkinModel import TrainSkinModel
 from scipy import ndimage
 # skinHisto = np.zeros((256,256,256))
@@ -21,7 +20,9 @@ class SkinModel():
         self.skinHistoSum = np.sum(self.skinHisto,axis=2)
         self.nonskinHistoSum = np.sum(self.nonskinHisto,axis=2)
 
-        
+        self.lower = np.array([5, 5, 80], dtype = "uint8")
+        self.upper = np.array([50, 175, 250], dtype = "uint8")
+
     def getModels(self):
         return self.skinHisto, self.nonskinHisto
     
@@ -75,11 +76,63 @@ class SkinModel():
         return mask
 
 
-    
+
+    def detectRange(self,img,mode='BGR'):
+        if mode == 'BGR':
+            img = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
+        elif mode=='RGB':
+            img = rgb2hsv(img)
+        elif mode=='HSV':
+            pass
+        else:
+            raise ValueError('Image mode is not RGB nor HSV')
+
+        skinMask = cv2.inRange(img, self.lower, self.upper)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        skinMask = cv2.dilate(skinMask, kernel, iterations = 2)
+        skinMask = cv2.erode(skinMask, kernel, iterations = 2)
+        # skinMask = cv2.GaussianBlur(skinMask, (3, 3), 0)
+        # print(np.max(skinMask),np.min(skinMask))
+        return (skinMask/255.0).astype('uint8')
+
+    def detectRangeAllSpaces (self,img,mode='BGR'):
+        """https://arxiv.org/pdf/1708.02694.pdf"""
+        """https://www.researchgate.net/publication/26593885_A_Skin_Detection_Approach_Based_on_Color_Distance_Map"""
+        if mode == 'BGR':
+            rgb = img[...,::-1]
+            hsv = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
+        elif mode=='RGB':
+            rgb = img
+            hsv = rgb2hsv(img)
+        elif mode=='HSV':
+            rgb = hsv2rgb(img)
+            hsv = img
+        else:
+            raise ValueError('Image mode is not RGB nor HSV')
+
+        lowerHSV = np.array([0, 0, 0], dtype = "uint8")
+        upperHSV = np.array([50, 175, 255], dtype = "uint8")
+
+        lowerRGB = np.array([95, 40, 20], dtype = "uint8")
+        upperRGB = np.array([255, 255, 255], dtype = "uint8")
+
+        mask1 = cv2.inRange(hsv, lowerHSV, upperHSV)
+        mask2 = cv2.inRange(rgb, lowerRGB, upperRGB)
+        #  R > G and R > B and | R - G | > 15 and A > 15
+        mask3 = (rgb[:,:,0] > rgb[:,:,1]) * (rgb[:,:,0] > rgb[:,:,2]) * ((rgb[:,:,0] - rgb[:,:,1]) > 15)
+
+        skinMask =  mask1 * mask2 * mask3
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        skinMask = cv2.dilate(skinMask, kernel, iterations = 2)
+        skinMask = cv2.erode(skinMask, kernel, iterations = 2)
+        return skinMask
+        
+
+
+
 
 def main():
-    from VideoSequence import VideoSequence as Vs
-    from utils import showImages
     s = SkinModel()
     # pskin = s.skinHisto *1.0 / s.Tskin  + 0.00000000001
     # pnon = s.nonskinHisto*1.0 / s.Tnon  + 0.000001
