@@ -55,6 +55,7 @@ class HandDetector:
 
         finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, skinBackgroundModel,handOnly)
 
+        self.roi = roi
         self.finalOut = finalOut
         self.backgroundSubtraction = backgroundSubtraction
         self.morphologyWeight = morphologyWeight

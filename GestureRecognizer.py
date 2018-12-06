@@ -28,17 +28,28 @@ class GestureRecognizer:
         else:
             return 'NO SHAPE'
 
-    def recognize(self, roi, hand):
+    def recognize(self, roi, handMask):
         try:
+            handMask = cv2.erode(handMask,np.ones((3,3)),iterations=3)
+            handMask = cv2.dilate(handMask,np.ones((3,3)),iterations=3)
+            handMask = roi * handMask
+            hand = handMask
+            
+
             hand = self.__preProcessing__(hand)
             contours = self.__findContoursSorted__(hand, roi)
 
+            maxCnt = contours[0]
+            x,y,w,h = cv2.boundingRect(maxCnt)
+            hand = hand[y:y+h, x:x+w]
+
+            contours = self.__findContoursSorted__(hand, roi)
             maxCnt = contours[0]
 
             maxCntArea = cv2.contourArea(maxCnt)
             maxCnt2Area = cv2.contourArea(contours[1]) if len(contours) >=2 else 0.0001
             f_maxTwoCntRatio = (maxCntArea - maxCnt2Area) / maxCnt2Area
-
+            
             hull = cv2.convexHull(maxCnt)
             areahull = cv2.contourArea(hull)
             #f_hullCntRatio = (areahull - maxCntArea) / maxCntArea
@@ -47,11 +58,11 @@ class GestureRecognizer:
 
             x,y,w,h = cv2.boundingRect(maxCnt)
             cv2.rectangle(hand,(x,y),(x+w,y+h),(100),5)  # * [debug]
-            f_lengthRatio =  h / w
+            f_lengthRatio =  h / float(w)
 
             f_defects = self.__findDefects__(roi, maxCnt)
             print(f_defects)
-            cv2.imshow('mask',hand)
+            cv2.imshow('hand_gestureRecog',hand)
             return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio)
         except Exception as e:
             print(e)
@@ -66,7 +77,7 @@ class GestureRecognizer:
     def __findContoursSorted__(self, hand, roi):
         _,contours,hierarchy= cv2.findContours(hand,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         contours = sorted(contours, key=lambda x: cv2.contourArea(x), reverse = True)
-        cv2.drawContours(roi, contours,-1, color=(255,0,0))
+        # cv2.drawContours(roi, contours,-1, color=(255,0,0))
         cv2.drawContours(hand, contours,-1, color=(100))
         return contours
 
@@ -105,12 +116,13 @@ class GestureRecognizer:
             # ignore angles > 90 and ignore points very close to convex hull(they generally come due to noise)
             if angle <= 90 and d > T_MIN_DISTANCE:
                 f_numDefects += 1
-                cv2.circle(roi, far, 3, [255,0,0], -1)
+                # cv2.circle(roi, far, 3, [255,0,0], -1)
             else:
-                cv2.circle(roi, far, 3, [0,0,255], -1)
+                pass
+                # cv2.circle(roi, far, 3, [0,0,255], -1)
             
             #draw lines around hand
-            cv2.line(roi,start, end, [0,255,0], 2)
+            # cv2.line(roi,start, end, [0,255,0], 2)
 
         return f_numDefects
 

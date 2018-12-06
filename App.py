@@ -1,6 +1,6 @@
 from VideoSequence import VideoSequence as Vs
 from HandDetector import HandDetector as Hd
-from GestureDetector import GestureDetector as Gd
+from GestureRecognizer import GestureRecognizer as Gd
 from GameController import GameController as Gc
 from utils import showImages
 
@@ -28,6 +28,8 @@ class AppManager:
         frames = self.vs.process()
         self.hd.detect(frames("gray"), frames("BGR")[0])
         # should call here GestureDetector then GameController
+        gesture = self.gd.recognize(self.hd.roi,self.hd.finalOut)
+        print(gesture)
 
 
 def main():
