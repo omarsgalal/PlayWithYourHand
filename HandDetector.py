@@ -4,7 +4,7 @@ import numpy as np
 from SkinModel.SkinModel import SkinModel
 from morphology import MorphologyDetector
 from motionDetection import MotionDetector
-from utils import get3DMask
+from utils import timeMessage
 from scipy import ndimage
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
@@ -20,7 +20,7 @@ class HandDetector:
         self.handCout = 0 
 
     def getState(self):
-        return (self.finalOut, (self.backgroundSubtraction * 255).astype('uint8'), self.morphologyWeight, self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','morphologyWeight','backgroundModel','skinBackgroundModel','skinFrameModel')
+        return (self.finalOut, (self.backgroundSubtraction * 255).astype('uint8'), self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','backgroundModel','skinBackgroundModel','skinFrameModel')
     
     def updateSkinBackgroundModel(self):
         backgroundModel = self.getBackgroundModel()
@@ -35,39 +35,43 @@ class HandDetector:
     def detect(self, frames_gray, currFrame_rgb):
         self.updateSkinBackgroundModel() # optimize
 
+        e1 = cv2.getTickCount()
         roi, backgroundSubtraction = self.__motionDetection__.detect(frames_gray, currFrame_rgb, self.getSkinBackgroundModel())
-        #backgroundSubtraction = (backgroundSubtraction - np.min(backgroundSubtraction))/np.ptp(backgroundSubtraction)
-        
-        # should be global not here KASEB
-        #backgroundSubtraction = cv2.medianBlur(backgroundSubtraction,3)
-
-        # backgroundSubtraction_mask = get3DMask(backgroundSubtraction)
-        # backgroundSubtraction_rgb = backgroundSubtraction_mask * currFrame_rgb
+        GLog.d(timeMessage('motionDetection', e1), tag=self.TAG)
 
         #multiply by background or not (important)
+        e1 = cv2.getTickCount()
         skinColorDetection = self.__skinModel__.detect(currFrame_rgb) #* backgroundSubtraction
+        GLog.d(timeMessage('skinModel', e1), tag=self.TAG)
 
         #Omar Trial
         skinBackgroundModel = self.getSkinBackgroundModel()
         #backgroundSubtraction += roi * skinBackgroundModel
 
-        morphologyWeight = calcMorphology(backgroundSubtraction)
-        handOnly = self.handWithoutFace(currFrame_rgb)
+        #// morphologyWeight = calcMorphology(backgroundSubtraction) #* 0.1
 
-        finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, morphologyWeight, skinBackgroundModel,handOnly)
+        e1 = cv2.getTickCount()
+        handOnly = self.handWithoutFace(currFrame_rgb)
+        GLog.d(timeMessage('handWithoutFace', e1), tag=self.TAG)
+
+        e1 = cv2.getTickCount()
+        finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, None, skinBackgroundModel,handOnly)
+        GLog.d(timeMessage('combine', e1), tag=self.TAG)
 
         self.roi = roi
         self.finalOut = finalOut
         self.backgroundSubtraction = backgroundSubtraction
-        self.morphologyWeight = morphologyWeight
+        #// self.morphologyWeight = morphologyWeight
         self.skinColorDetection = skinColorDetection
         images, titles = self.getState()
         ILog.d(images, titles)
         return images, titles
 
     def handWithoutFace(self,img):
-        frame = self.__skinModel__.detectRangeAllSpaces(img)
+        frame = self.__skinModel__.detectRangeAllSpaces(img) #* 0.011 s
         ILog.d(frame*255, "handWithoutFaceFrame")
+
+        e1 = cv2.getTickCount()
         while self.handCout<25:
             mask = frame.copy()
             mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
@@ -78,6 +82,7 @@ class HandDetector:
                 GLog.d(self.handCout, tag=self.TAG)
                 break
             self.handCout += 1
+        GLog.d(timeMessage('while loop in handWithoutFace', e1), tag="handWithoutFace")
         ILog.d(mask*255, "handWithoutFace")
         if self.handCout >= 25:
             self.handCout = 15

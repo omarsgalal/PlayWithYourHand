@@ -51,6 +51,7 @@ class VideoSequence:
             raise Exception("Not supported frames of type {}, only supproted are 'BGR', 'gray'".format(fType))
     
     def __del__(self):
+        cv2.destroyAllWindows()
         self.__cap__.release()
 
 

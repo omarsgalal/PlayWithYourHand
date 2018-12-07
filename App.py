@@ -2,10 +2,10 @@ from VideoSequence import VideoSequence as Vs
 from HandDetector import HandDetector as Hd
 from GestureRecognizer import GestureRecognizer as Gd
 from GameController import GameController as Gc
-from utils import showImages
+from utils import showImages, timeMessage
 from ConfigReader import ConfigReader
 import AppLogger as Logger
-
+from cv2 import getTickCount
 class AppManager:
     TAG = "AppManager"
     """ this class is the manager of the whole app, define interface between user of the app (developer) and what this app do.
@@ -29,17 +29,25 @@ class AppManager:
 
     def step(self):
         #* capturing
+        e1 = getTickCount()
         frames = self.vs.process()
+        Logger.GeneralLogger.o(timeMessage("frame process", e1), tag="TIME")
 
         #* detection
+        e1 = getTickCount()
         self.hd.detect(frames("gray"), frames("BGR")[0])
+        Logger.GeneralLogger.o(timeMessage("hand detection", e1), tag="TIME")
 
         #* recognition
+        e1 = getTickCount()
         gesture, center = self.gd.recognize(self.hd.roi, self.hd.finalOut)
         Logger.GeneralLogger.o("{} detected in {}".format(gesture, center), tag=self.TAG)
+        Logger.GeneralLogger.o(timeMessage("gesture recognition", e1), tag="TIME")
 
         #* controlling
+        e1 = getTickCount()
         self.gc.control(gesture, center)
+        Logger.GeneralLogger.o(timeMessage("controlling", e1), tag="TIME")
 
 
 

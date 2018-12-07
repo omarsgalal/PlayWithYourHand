@@ -18,3 +18,8 @@ def get3DMask(mask2D):
 	mask3D[:, :, 1] = mask2D
 	mask3D[:, :, 2] = mask2D
 	return mask3D
+
+
+def timeMessage(who, e1):
+    e2 = cv2.getTickCount()
+    return "{} elapsed {} seconds".format(who, (e2-e1) / cv2.getTickFrequency())
