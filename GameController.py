@@ -1,8 +1,10 @@
 from InputFeeder import InputFeeder
 from ControlActions import *
 from Gestures import NO_GST
+from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
 class GameController:
+    TAG = "GameController"
     def __init__(self, config, sensitivity = 1): # sensitivity = 1 is largest sensitivity, more sensitivity value means less sensitivity
         self.sensitivity = sensitivity
         self.inputFeeder = InputFeeder()
@@ -39,7 +41,7 @@ class GameController:
 
     def control(self, gesture, center = (0,0)):
         if(not self.__shouldConsidered__(gesture)):
-            print("gesture '{}' found but didn't considered due to sensitivity option".format(gesture))
+            GLog.d("gesture '{}' found but didn't considered due to sensitivity option".format(gesture), tag=self.TAG)
             return
         self.__track__(gesture, center)
         g_config = self.config[gesture]
@@ -52,24 +54,26 @@ class GameController:
             self.inputFeeder.move(g_config["prev"], g_config["curr"])
 
         elif(g_config["control"] == RIGHT_CLICK and self.lastGesture != gesture):# for first time only [press when 'key down']
-            print("[GameController]: right mouse click")
+            GLog.o("right mouse click", tag=self.TAG)
             self.inputFeeder.rightClick()
 
         elif(g_config["control"] == LEFT_CLICK and self.lastGesture != gesture):
-            print("[GameController]: left mouse click")
+            GLog.o("left mouse click", tag=self.TAG)
             self.inputFeeder.leftClick()
 
         elif(g_config["control"] == DRAG_RIGHT_CLICK):
+            GLog.o("dragging with right click", tag=self.TAG)
             self.inputFeeder.dragRightClick(g_config["prev"], g_config["curr"])
 
         elif(g_config["control"] == DRAG_LEFT_CLICK):
+            GLog.o("dragging with left click", tag=self.TAG)
             self.inputFeeder.dragLeftClick(g_config["prev"], g_config["curr"])
 
         elif(g_config["control"] == ESCAPE and self.lastGesture != gesture):
-            print("[GameController]: escape press")
+            GLog.o("escape press", tag=self.TAG)
             self.inputFeeder.pressChars(['esc'])
         else: 
-            print("gesture '{}' is not found in config file or already pressed".format(gesture))
+            GLog.d("gesture '{}' is not found in config file or already pressed".format(gesture), tag=self.TAG)
         self.lastGesture = gesture
 
 

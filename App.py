@@ -4,16 +4,19 @@ from GestureRecognizer import GestureRecognizer as Gd
 from GameController import GameController as Gc
 from utils import showImages
 from ConfigReader import ConfigReader
+import AppLogger as Logger
 
 class AppManager:
+    TAG = "AppManager"
     """ this class is the manager of the whole app, define interface between user of the app (developer) and what this app do.
     simply this class manages the communication between 4 main classes (VideoSequence, HandDetector, GestureDetector, GameController)"""
-    def __init__(self):
+    def __init__(self, output=True,debug=False):
+        Logger.debug = debug
+        Logger.out = output
         self.vs = Vs().start()
         self.hd = Hd(self.vs.getFrames("BGR")[-2])
         self.gd = Gd()
         self.gc = Gc(ConfigReader.default())
-        pass
 
 
     def showAllImages(self):
@@ -23,22 +26,28 @@ class AppManager:
         images, titles = self.hd.getState()
         showImages(images, titles)
         showImages((currFrame,),('Camera',))
-        pass
 
     def step(self):
+        #* capturing
         frames = self.vs.process()
+
+        #* detection
         self.hd.detect(frames("gray"), frames("BGR")[0])
-        # should call here GestureDetector then GameController
-        gesture, center = self.gd.recognize(self.hd.roi,self.hd.finalOut)
-        print(gesture, center)
+
+        #* recognition
+        gesture, center = self.gd.recognize(self.hd.roi, self.hd.finalOut)
+        Logger.GeneralLogger.o("{} detected in {}".format(gesture, center), tag=self.TAG)
+
+        #* controlling
         self.gc.control(gesture, center)
 
 
+
 def main():
-    tester = AppManager()
+    tester = AppManager(output=True, debug=True)
     while(True):
         tester.step()
-        tester.showAllImages()
+        #// tester.showAllImages()
 
 if __name__ == "__main__":
     main()
