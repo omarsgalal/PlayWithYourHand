@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 from scipy import ndimage
+from Gestures import *
 
 T_RIGHT_CLICK = 50  # max cnt is larger than next larger cnt area with this value => more value means more possible to be recognized over left click and no shape
 T_LEFT_CLICK = 20   # hull area is larger than cnt area with at least this value => less value means more possible to be recognized over no shape
@@ -18,15 +19,15 @@ class GestureRecognizer:
         print('hullCntRatio=',hullCntRatio)
         print('maxTwoCntRatio=',maxTwoCntRatio)
         if numDefects >= 2:
-            return 'PALM'
+            return PALM
         elif lengthRatio > 2:
-            return 'KNIFE'
+            return KNIFE
         elif maxTwoCntRatio < 250 :
-            return 'ZERO'
+            return ZERO
         elif lengthRatio < 1.45 and lengthRatio > 0.8 and hullCntRatio > 0.9 and hullCntRatio < 1.1: # square like
-            return 'FIST'
+            return FIST
         else:
-            return 'NO SHAPE'
+            return NO_GST
 
     def recognize(self, roi, handMask):
         try:
@@ -66,7 +67,7 @@ class GestureRecognizer:
             return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio), self.__contourCenter__(maxCnt)
         except Exception as e:
             print(e)
-            return 'NO SHAPE', (0,0)
+            return NO_GST, (0,0)
 
     def __preProcessing__(self, mask):
         kernel = np.ones((3,3),np.uint8)

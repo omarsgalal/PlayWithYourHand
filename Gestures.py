@@ -1,0 +1,5 @@
+FIST = "fist"
+PALM = "palm"
+KNIFE = "knife"
+ZERO = "zero"
+NO_GST = "no shape"

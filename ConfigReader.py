@@ -1,3 +1,5 @@
+from ControlActions import *
+from Gestures import *
 class ConfigReader:
     def __init__(self):
         pass
@@ -10,8 +12,9 @@ class ConfigReader:
     @classmethod
     def default(cls):
         return {
-            "PALM": "moving",
-            "FIST": "left click",
-            "KNIFE": "esc",
-            "ZERO": "right click",
+            PALM: MOVE,
+            FIST: LEFT_CLICK,
+            KNIFE: ESCAPE,
+            ZERO: RIGHT_CLICK,
+            NO_GST: NO_ACTION,
         }
