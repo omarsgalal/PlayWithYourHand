@@ -6,9 +6,10 @@ from morphology import MorphologyDetector
 from motionDetection import MotionDetector
 from utils import get3DMask
 from scipy import ndimage
-
+from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
 class HandDetector:
+    TAG = "HandDetector"
     # models = TrainSkinModel().loadModel()
     def __init__(self, initialBackground):
         self.backgroundModel = initialBackground
@@ -60,12 +61,13 @@ class HandDetector:
         self.backgroundSubtraction = backgroundSubtraction
         self.morphologyWeight = morphologyWeight
         self.skinColorDetection = skinColorDetection
-        return self.getState()
+        images, titles = self.getState()
+        ILog.d(images, titles)
+        return images, titles
 
     def handWithoutFace(self,img):
         frame = self.__skinModel__.detectRangeAllSpaces(img)
-        cv2.imshow("handWithoutFaceFrame",frame*255)
-        
+        ILog.d(frame*255, "handWithoutFaceFrame")
         while self.handCout<25:
             mask = frame.copy()
             mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
@@ -73,10 +75,10 @@ class HandDetector:
             resultImageDiff, _ = ndimage.measurements.label(mask)
             objs = ndimage.find_objects(resultImageDiff)
             if (len(objs) == 1):
-                print(self.handCout)
+                GLog.d(self.handCout, tag=self.TAG)
                 break
             self.handCout += 1
-        cv2.imshow("handWithoutFace",mask*255)
+        ILog.d(mask*255, "handWithoutFace")
         if self.handCout >= 25:
             self.handCout = 15
 
@@ -97,10 +99,10 @@ class HandDetector:
     def __combine2__(self, MD, SCD, sB,Hand):
         skinDifference = np.maximum(SCD.astype(float) + Hand - cv2.dilate(sB, np.ones((7,7),dtype='float'), iterations = 3), 0)
         #skinDifference = cv2.dilate(skinDifference, np.ones((3, 3)), iterations = 1)
-        cv2.imshow('skindiff', skinDifference)
+        ILog.d(skinDifference, 'skindiff')
         # skinDifference (From 2 to 0) + 0.9 * MD(From 1 to 0) supposed to devide by (2.9) then * 255 KASEB
         totalDifference = np.minimum((skinDifference + 0.9 * MD) * 255, 255).astype('uint8')
-        cv2.imshow('before otsu', totalDifference)
+        ILog.d(totalDifference, 'before otsu')
         _ , final_img = cv2.threshold(totalDifference,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         final_img = cv2.erode(final_img, np.ones((2, 2)), iterations = 1)
         final_img = cv2.medianBlur(final_img, 5)
@@ -108,7 +110,8 @@ class HandDetector:
 
 
 
-def main():
+            
+if __name__ == "__main__":
     from VideoSequence import VideoSequence as Vs
     from utils import showImages
     vs = Vs().start()
@@ -120,7 +123,3 @@ def main():
         key = cv2.waitKey(10)
         if key == 27 or 0xff:
             break
-
-            
-if __name__ == "__main__":
-    main()

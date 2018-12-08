@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import math
 from scipy import ndimage
+from Gestures import *
+from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
 T_RIGHT_CLICK = 50  # max cnt is larger than next larger cnt area with this value => more value means more possible to be recognized over left click and no shape
 T_LEFT_CLICK = 20   # hull area is larger than cnt area with at least this value => less value means more possible to be recognized over no shape
@@ -9,24 +11,25 @@ T_MOVING = 2        # less value means more possible to be moving, [from 1 to 4]
 
 T_MIN_DISTANCE = 15 # less value means more accuracy for move but also more noise in others ==> is this value made very minimum, consider using more value in T_MOVING
 class GestureRecognizer:
+    TAG = "GestureRecognizer"
     def __init__(self):
         pass
 
     def fromFeatures(self, numDefects, lengthRatio, hullCntRatio, maxTwoCntRatio):
-        print('defects=',numDefects)
-        print('lengthRatio=',lengthRatio)
-        print('hullCntRatio=',hullCntRatio)
-        print('maxTwoCntRatio=',maxTwoCntRatio)
+        GLog.d("defects={}".format(numDefects), tag=self.TAG)
+        GLog.d("lengthRatio={}".format(lengthRatio), tag=self.TAG)
+        GLog.d("hullCntRatio={}".format(hullCntRatio), tag=self.TAG)
+        GLog.d("maxTwoCntRatio={}".format(maxTwoCntRatio), tag=self.TAG)
         if numDefects >= 2:
-            return 'PALM'
+            return PALM
         elif lengthRatio > 2:
-            return 'KNIFE'
+            return KNIFE
         elif maxTwoCntRatio < 250 :
-            return 'ZERO'
+            return ZERO
         elif lengthRatio < 1.45 and lengthRatio > 0.8 and hullCntRatio > 0.9 and hullCntRatio < 1.1: # square like
-            return 'FIST'
+            return FIST
         else:
-            return 'NO SHAPE'
+            return NO_GST
 
     def recognize(self, roi, handMask):
         try:
@@ -61,12 +64,11 @@ class GestureRecognizer:
             f_lengthRatio =  h / float(w)
 
             f_defects = self.__findDefects__(roi, maxCnt)
-            print(f_defects)
-            cv2.imshow('hand_gestureRecog',hand)
+            ILog.o(hand,'hand_gestureRecog')
             return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio), self.__contourCenter__(maxCnt)
         except Exception as e:
-            print(e)
-            return 'NO SHAPE', (0,0)
+            GLog.d(e, tag=self.TAG)
+            return NO_GST, (0,0)
 
     def __preProcessing__(self, mask):
         kernel = np.ones((3,3),np.uint8)
