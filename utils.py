@@ -22,4 +22,4 @@ def get3DMask(mask2D):
 
 def timeMessage(who, e1):
     e2 = cv2.getTickCount()
-    return "{} elapsed {} seconds".format(who, (e2-e1) / cv2.getTickFrequency())
+    return "{} elapsed {} seconds".format(who, (e2-e1)*1.0 / cv2.getTickFrequency())
