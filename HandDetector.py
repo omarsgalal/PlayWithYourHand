@@ -17,7 +17,7 @@ class HandDetector:
         self.__morphologyWeight = MorphologyDetector()
         self.__motionDetection__ = MotionDetector(initialBackground)
         self.__skinBackgroundModel__ = None
-        self.handCout = 0 
+        self.handCout = 15 
 
     def getState(self):
         return (self.finalOut, (self.backgroundSubtraction * 255).astype('uint8'), self.getBackgroundModel(), self.getSkinBackgroundModel()*255,self.skinColorDetection*255),('finalOut', 'backgroundSubtraction','backgroundModel','skinBackgroundModel','skinFrameModel')
@@ -51,7 +51,7 @@ class HandDetector:
         #// morphologyWeight = calcMorphology(backgroundSubtraction) #* 0.1
 
         e1 = cv2.getTickCount()
-        handOnly = self.handWithoutFace(currFrame_rgb)
+        handOnly = self.handWithoutFace(currFrame_rgb, roi)
         GLog.d(timeMessage('handWithoutFace', e1), tag=self.TAG)
 
         e1 = cv2.getTickCount()
@@ -67,25 +67,29 @@ class HandDetector:
         ILog.d(images, titles)
         return images, titles
 
-    def handWithoutFace(self,img):
+    def handWithoutFace(self,img, roi):
         frame = self.__skinModel__.detectRangeAllSpaces(img) #* 0.011 s
         ILog.d(frame*255, "handWithoutFaceFrame")
 
         e1 = cv2.getTickCount()
-        while self.handCout<25:
-            mask = frame.copy()
-            mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
-            mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)
-            resultImageDiff, _ = ndimage.measurements.label(mask)
-            objs = ndimage.find_objects(resultImageDiff)
-            if (len(objs) == 1):
-                GLog.d(self.handCout, tag=self.TAG)
-                break
-            self.handCout += 1
+        # while self.handCout<25:
+        mask = frame * roi
+        mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
+        mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)
+        # resultImageDiff, _ = ndimage.measurements.label(mask)
+        # objs = ndimage.find_objects(resultImageDiff)
+            # if (len(objs) == 1):
+            #     print(self.handCout)
+            #     break
+            # self.handCout += 1
+        ILog.d(mask*255, 'handWithoutFace')
+        # if self.handCout >= 25:
+            # self.handCout = 15
         GLog.d(timeMessage('while loop in handWithoutFace', e1), tag="handWithoutFace")
-        ILog.d(mask*255, "handWithoutFace")
-        if self.handCout >= 25:
-            self.handCout = 15
+
+        # ILog.d(mask*255, "handWithoutFace")
+                # if self.handCout >= 25:
+        #     self.handCout = 15
 
         return mask
 
