@@ -38,14 +38,20 @@ class AsyncControlRepeater:
     def control(self):
         GLog.d("control started", tag = self.TAG)
         while not self.stopped:
-            if(len(self.gestures) == 0):
-                gesture, center = self.last
-                GLog.d("len is 0", tag = self.TAG)        
+            if(len(self.gestures) == 1):
+                gesture1, center1 = self.last
+                gesture2, center2 = self.gestures[-1]
+                center = []
+                if(gesture1 == gesture2):
+                    center[0] = center1[0] + (center2[0] - center1[0])
+                    center[1] = center1[1] + (center2[1] - center1[1])
+                GLog.d("len is 1", tag = self.TAG)        
+                self.gc.control(gesture1, center)
             else:
-                gesture, center = self.gestures.pop()   
+                gesture, center = self.gestures.pop()
                 self.last = gesture, center
                 GLog.d("handling", tag = self.TAG)        
-            self.gc.control(gesture, center)
+                self.gc.control(gesture, center)
         GLog.d("control end", tag = self.TAG)
         
 
