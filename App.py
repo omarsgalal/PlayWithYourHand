@@ -2,6 +2,7 @@ from VideoSequence import VideoSequence as Vs
 from HandDetector import HandDetector as Hd
 from GestureRecognizer import GestureRecognizer as Gd
 from GameController import GameController as Gc
+from AsyncControlRepeater import AsyncControlRepeater 
 from utils import showImages, timeMessage
 from ConfigReader import ConfigReader
 import AppLogger as Logger
@@ -16,8 +17,7 @@ class AppManager:
         self.vs = Vs().start()
         self.hd = Hd(self.vs.getFrames("BGR")[-2])
         self.gd = Gd()
-        self.gc = Gc(ConfigReader.default())
-
+        self.gc = AsyncControlRepeater(Gc(ConfigReader.default())).start()
 
     def showAllImages(self):
         currFrame = self.vs.getFrames("BGR")[0]
@@ -46,7 +46,8 @@ class AppManager:
 
         #* controlling
         e1 = getTickCount()
-        self.gc.control(gesture, center)
+        #// self.gc.control(gesture, center)
+        self.gc.addGstRecognition((gesture, center))
         Logger.GeneralLogger.o(timeMessage("controlling", e1), tag="TIME")
 
 
@@ -56,6 +57,7 @@ def main():
     while(True):
         tester.step()
         #// tester.showAllImages()
+    tester.gc.stop()
 
 if __name__ == "__main__":
     main()
