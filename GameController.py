@@ -39,19 +39,19 @@ class GameController:
         self.prevSensitivityGes = gesture
         return False
 
-    def control(self, gesture, center = (0,0)):
+    def control(self, gesture, center = (0,0), dt = 0.2):
         if(not self.__shouldConsidered__(gesture)):
             GLog.d("gesture '{}' found but didn't considered due to sensitivity option".format(gesture), tag=self.TAG)
             return
         self.__track__(gesture, center)
-        g_config = self.config[gesture]
+        g_config = self.config[gesture] # config of this gesture
 
         # to detect: 
         #   'key down': config[gesture] == action and lastGesture != gesture
         #   'key up': config[lastGesture] == action and lastGesture != gesture
         #   'hold': config[gesture] == action
         if(g_config["control"] == MOVE):
-            self.inputFeeder.move(g_config["prev"], g_config["curr"])
+            self.inputFeeder.move(g_config["prev"], g_config["curr"], duration = dt)
 
         elif(g_config["control"] == RIGHT_CLICK and self.lastGesture != gesture):# for first time only [press when 'key down']
             GLog.o("right mouse click", tag=self.TAG)
