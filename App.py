@@ -47,11 +47,12 @@ class AppManager:
         Logger.GeneralLogger.o(timeMessage("gesture recognition", e1), tag="TIME")
         endT = getTickCount()
         #* controlling
-        #// e1 = getTickCount()
+        
         self.gc.control(gesture, center, (endT - startT) / getTickFrequency())
         #self.gc.addGstRecognition(gesture, center)
-        #// Logger.GeneralLogger.o(timeMessage("controlling", e1), tag="TIME")
+        e1 = getTickCount()
         Logger.ImageLogger.o(self.vs.getFrames("BGR")[0], 'camera')
+        Logger.GeneralLogger.o(timeMessage("imshow the image itself", e1), tag="TIME")
 
 
 
