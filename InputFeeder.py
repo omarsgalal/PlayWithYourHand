@@ -12,15 +12,15 @@ class InputFeeder:
     def __dy__(self, prev, current):
         return current[1] - prev[1]
 
-    def move(self, prev, current):
+    def move(self, prev, current, duration = 0):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)
         GLog.d("dx= {}, dy= {}".format(dx, dy), tag=self.TAG)
-        pya.moveRel(xOffset=dx*10, yOffset=dy*10, duration=0.1)
+        pya.moveRel(xOffset=dx, yOffset=dy, duration=duration)
 
     def dragLeftClick(self, prev, current):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)
         GLog.d("dx= {}, dy= {}".format(dx, dy), tag=self.TAG)
-        pya.dragRel(xOffset=dx, yOffset=dy, duration=0.001)
+        pya.dragRel(xOffset=dx*3, yOffset=dy*3, duration=0.001)
 
     def dragRightClick(self, prev, current):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)

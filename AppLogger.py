@@ -1,7 +1,7 @@
 from utils import showImages
 from cv2 import imshow
 
-out=True
+out=False
 debug=False
 class ImageLogger:
     def __init__(self):
@@ -9,6 +9,7 @@ class ImageLogger:
 
     @classmethod
     def o(cls, images, titles=None):
+        return
         '''
             out images if config 'out' = true, else do nothing
         '''
@@ -18,6 +19,7 @@ class ImageLogger:
 
     @classmethod
     def d(cls, images, titles=None):
+        return
         '''
             out images if config 'debug' = true, else do nothing
         '''
@@ -32,12 +34,15 @@ class GeneralLogger:
         '''
             out message with tag of specified if config 'out' = true, else do nothing
         '''
-        print("[{}]: {}".format(tag, message)) if out else None
-        pass
+        if(not out):
+            return
+        print("[{}]: {}".format(tag, message))
 
     @classmethod
     def d(cls, message, tag=None):
         '''
             out message with tag of specified if config 'debug' = true, else do nothing
         '''
-        print("[{}]: {}".format(tag, message)) if debug else None
+        if(not debug):
+            return
+        print("[{}]: {}".format(tag, message))

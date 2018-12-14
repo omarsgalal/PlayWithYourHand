@@ -15,12 +15,13 @@ class MotionDetector():
     def ImageDiff (self, beforeLastFrameGray,lastFrameGray,currentFrameGray,threshold=30):
         diff1 = cv2.absdiff(currentFrameGray,lastFrameGray)
         diff2 = cv2.absdiff(currentFrameGray,beforeLastFrameGray)    
-        binary1 = diff1 > threshold
-        binary2 = diff2 > threshold
-        resultImageDiff = binary1 * binary2
-        resultImageDiff = cv2.erode(resultImageDiff.astype('uint8'), np.ones((5, 5),dtype='uint8'), iterations = 2)
+        _, binary1 = cv2.threshold(diff1,threshold,1,cv2.THRESH_BINARY)
+        _, binary2 = cv2.threshold(diff2,threshold,1,cv2.THRESH_BINARY)
 
-        ILog.d((resultImageDiff * 255).astype('uint8'), 'imgdiff')
+        resultImageDiff = cv2.bitwise_and(binary1, binary2)
+        resultImageDiff = cv2.erode(resultImageDiff, np.ones((5, 5),dtype='uint8'), iterations = 2)
+
+        #ILog.d((resultImageDiff * 255), 'imgdiff')
 
         #resultImageDiff, _ = ndimage.measurements.label(resultImageDiff)
         objs = ndimage.find_objects(resultImageDiff)
@@ -58,24 +59,18 @@ class MotionDetector():
         # mask = cv2.erode(skinBModel, np.ones((7,7)), iterations = 2)
         # mask = cv2.dilate(mask, np.ones((15,15)), iterations = 3)
 
-        mask1 = np.zeros_like(self.backgroundModel).astype(bool)
-        mask1[mROI[0]:mROI[1], mROI[2]:mROI[3], :] = True
-        mask2 = np.invert(mask1)
+        mask1 = np.zeros(self.backgroundModel.shape,dtype='uint8')
+        mask1[mROI[0]:mROI[1], mROI[2]:mROI[3],:] = 1
+        mask2 = 1 - mask1
 
-        skinBModelT = -1 * skinBModel.astype(float) * mask1[:, :, 0] / 2 + 1
+        skinBModelT = -1.0 * skinBModel * mask1[:,:,0] / 2 + 1
         
-        binaryBackgroundSubtraction = (diffBackgroundSubtraction > (self.threshold * skinBModelT) ).astype(float)#  / skinBModel)#.astype(int)
+        binaryBackgroundSubtraction = diffBackgroundSubtraction > (self.threshold * skinBModelT) #  / skinBModel)#.astype(int)
+        # why KASEB
         binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
         
 
-
-        # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
-        
-        # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 1)
-        
-
-
-        ILog.d((mask1 * 255).astype('uint8'), 'mroi')
+        # ILog.d((mask1 * 255).astype('uint8'), 'mroi')
         self.backgroundModel = (mask1 * self.backgroundModel + mask2 * self.backgroundModel * alpha + mask2 * (1 - alpha) * currentFrame).astype('uint8')
 
         self.threshold = mask1[:,:,0] * self.threshold + mask2[:,:,0] * alpha * self.threshold + 5 * (1 - alpha) * diffBackgroundSubtraction * mask2[:,:,0]
