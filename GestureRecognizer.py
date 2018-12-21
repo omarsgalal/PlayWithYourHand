@@ -47,7 +47,7 @@ class GestureRecognizer:
             hand = hand[y:y+h, x:x+w]
 
             contours = self.__findContoursSorted__(hand, roi)
-            maxCnt = contours[0]
+            #maxCnt = contours[0]
 
             maxCntArea = cv2.contourArea(maxCnt)
             maxCnt2Area = cv2.contourArea(contours[1]) if len(contours) >=2 else 0.0001
