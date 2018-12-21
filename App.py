@@ -7,18 +7,20 @@ from utils import showImages, timeMessage
 from ConfigReader import ConfigReader
 import AppLogger as Logger
 from cv2 import getTickCount, getTickFrequency
+from argparse import ArgumentParser
 class AppManager:
     """ this class is the manager of the whole app, define interface between user of the app (developer) and what this app do.
     simply this class manages the communication between 4 main classes (VideoSequence, HandDetector, GestureDetector, GameController)"""
     TAG = "AppManager"
-    def __init__(self, output=True,debug=False):
+    def __init__(self, output=True,debug=False, feeding=False):
         Logger.debug = debug
         Logger.out = output
         self.vs = Vs().start()
         self.hd = Hd(self.vs.getFrames("BGR")[-2])
         self.gd = Gd()
         #self.gc = AsyncControlRepeater(Gc(ConfigReader.default()), maxBufferSize=1).start()
-        self.gc = Gc(ConfigReader.default())
+        self.gc = Gc(ConfigReader.default(), feeding=feeding)
+        self.feeding = feeding
 
     def showAllImages(self):
         currFrame = self.vs.getFrames("BGR")[0]
@@ -57,7 +59,10 @@ class AppManager:
 
 
 def main():
-    tester = AppManager(output=True, debug=True)
+    parser = ArgumentParser(prog='mouse controlling with hand :)')
+    parser.add_argument('-f', '--feeding', action='store_true')
+    args = parser.parse_args()
+    tester = AppManager(output=True, debug=True, feeding=args.feeding)
     while(True):
         tester.step()
         #// tester.showAllImages()

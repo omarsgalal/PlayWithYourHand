@@ -7,8 +7,9 @@ from cv2 import getTickCount, getTickFrequency
 
 class GameController:
     TAG = "GameController"
-    def __init__(self, config, sensitivity = 1): # sensitivity = 1 is largest sensitivity, more sensitivity value means less sensitivity
+    def __init__(self, config, sensitivity = 1, feeding = False): # sensitivity = 1 is largest sensitivity, more sensitivity value means less sensitivity
         self.sensitivity = sensitivity
+        self.feeding = feeding
         self.inputFeeder = InputFeeder()
         self.config = {}
         for gesture in config:
@@ -54,7 +55,7 @@ class GameController:
         #   'key up': config[lastGesture] == action and lastGesture != gesture
         #   'hold': config[gesture] == action
         if(g_config["control"] == MOVE):
-            self.inputFeeder.move(g_config["prev"], g_config["curr"], duration = dt)
+            self.inputFeeder.move(g_config["prev"], g_config["curr"], duration = dt, block = not self.feeding)
             GLog.o(timeMessage("controlling", e1), tag="TIME")
         
 

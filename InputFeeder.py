@@ -12,10 +12,11 @@ class InputFeeder:
     def __dy__(self, prev, current):
         return current[1] - prev[1]
 
-    def move(self, prev, current, duration = 0):
+    def move(self, prev, current, duration = 0, block = False):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)
         GLog.d("dx= {}, dy= {}".format(dx, dy), tag=self.TAG)
-        pya.moveRel(xOffset=dx*duration*50, yOffset=dy*duration*50, duration=0.05)
+        print(block)        
+        pya.moveRel(xOffset=dx, yOffset=dy, duration=duration) if block else pya.moveRel(xOffset=dx*duration*50, yOffset=dy*duration*50, duration=0.05)
 
     def dragLeftClick(self, prev, current):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)
