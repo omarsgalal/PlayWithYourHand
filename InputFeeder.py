@@ -1,6 +1,6 @@
 import pyautogui as pya
 from AppLogger import GeneralLogger as GLog
-
+pya.FAILSAFE = False
 class InputFeeder:
     TAG = "InputFeeder"
     def __init__(self):
@@ -15,7 +15,7 @@ class InputFeeder:
     def move(self, prev, current, duration = 0):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)
         GLog.d("dx= {}, dy= {}".format(dx, dy), tag=self.TAG)
-        pya.moveRel(xOffset=dx, yOffset=dy, duration=duration)
+        pya.moveRel(xOffset=dx*duration*50, yOffset=dy*duration*50, duration=0.05)
 
     def dragLeftClick(self, prev, current):
         dx, dy = self.__dx__(prev, current), self.__dy__(prev, current)

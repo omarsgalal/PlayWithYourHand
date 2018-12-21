@@ -3,8 +3,8 @@ import cv2
 import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
-#from TrainSkinModel import TrainSkinModel
-from SkinModel.TrainSkinModel import TrainSkinModel
+from TrainSkinModel import TrainSkinModel
+# from SkinModel.TrainSkinModel import TrainSkinModel
 from scipy import ndimage
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))

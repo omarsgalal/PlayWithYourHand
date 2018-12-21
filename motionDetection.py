@@ -45,7 +45,7 @@ class MotionDetector():
         resultImageDiff = cv2.bitwise_and(binary1, binary2)
         resultImageDiff = cv2.erode(resultImageDiff, np.ones((5, 5),dtype='uint8'), iterations = 2)
 
-        #ILog.d((resultImageDiff * 255), 'imgdiff')
+        ILog.d((resultImageDiff * 255), 'imgdiff')
 
         #resultImageDiff, _ = ndimage.measurements.label(resultImageDiff)
         objs = ndimage.find_objects(resultImageDiff)
@@ -70,7 +70,7 @@ class MotionDetector():
 
 
 
-    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.9):
+    def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.95):
         diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)#,keepdims=True)
         # one cancelled rule for using skin background model while subtracting
         # skinBModel = 2 * skinBModel + 1
@@ -99,7 +99,7 @@ class MotionDetector():
             ILog.s(skinBModel,'{}_skin_in_background_model'.format(self.counter),self.backgroundModel )
             
 
-        # ILog.d((mask1 * 255).astype('uint8'), 'mroi')
+        ILog.d((mask1 * 255).astype('uint8'), 'mroi')
         self.backgroundModel = (mask1 * self.backgroundModel + mask2 * self.backgroundModel * alpha + mask2 * (1 - alpha) * currentFrame).astype('uint8')
 
         self.threshold = mask1[:,:,0] * self.threshold + mask2[:,:,0] * alpha * self.threshold + 5 * (1 - alpha) * diffBackgroundSubtraction * mask2[:,:,0]
