@@ -7,11 +7,14 @@ from utils import showImages, timeMessage
 from ConfigReader import ConfigReader
 import AppLogger as Logger
 from cv2 import getTickCount, getTickFrequency
+import cv2
+
 class AppManager:
     """ this class is the manager of the whole app, define interface between user of the app (developer) and what this app do.
     simply this class manages the communication between 4 main classes (VideoSequence, HandDetector, GestureDetector, GameController)"""
     TAG = "AppManager"
     def __init__(self, output=True,debug=False):
+        self.counter = 0
         Logger.debug = debug
         Logger.out = output
         self.vs = Vs().start()
@@ -29,11 +32,17 @@ class AppManager:
         showImages((currFrame,),('Camera',))
 
     def step(self):
+        self.counter += 1
+        print(self.counter)
         startT = getTickCount()
         #* capturing
         e1 = getTickCount()
         frames = self.vs.process()
         Logger.GeneralLogger.o(timeMessage("frame process", e1), tag="TIME")
+        if self.counter % 30 == 0:
+            Logger.ImageLogger.s(frames("BGR")[0],'{}_Frame'.format(self.counter))
+            Logger.ImageLogger.s(frames("BGR")[1],'{}_before_previous_Frame'.format(self.counter))
+            Logger.ImageLogger.s(frames("BGR")[2],'{}_previous_Frame'.format(self.counter))
 
         #* detection
         e1 = getTickCount()

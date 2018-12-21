@@ -12,6 +12,7 @@ class HandDetector:
     TAG = "HandDetector"
     # models = TrainSkinModel().loadModel()
     def __init__(self, initialBackground):
+        self.counter = 0
         self.backgroundModel = initialBackground
         self.__skinModel__ = SkinModel()
         self.__morphologyWeight = MorphologyDetector()
@@ -33,6 +34,7 @@ class HandDetector:
         return self.__motionDetection__.backgroundModel
 
     def detect(self, frames_gray, currFrame_rgb):
+        self.counter += 1
         e1 = cv2.getTickCount()
         self.updateSkinBackgroundModel() # optimize
         GLog.d(timeMessage('updateSkinBackgroundModel', e1), tag=self.TAG)
@@ -59,6 +61,15 @@ class HandDetector:
         e1 = cv2.getTickCount()
         finalOut = self.__combine__(backgroundSubtraction, skinColorDetection, None, skinBackgroundModel,handOnly)
         GLog.d(timeMessage('combine', e1), tag=self.TAG)
+
+
+        if self.counter % 30 == 0:
+            ILog.s(handOnly,'{}_hand_Without_Face'.format(self.counter),currFrame_rgb)
+            ILog.s(skinColorDetection,'{}_skin_in_frame'.format(self.counter),currFrame_rgb)
+            ILog.s(finalOut,'{}_Hand_Only_Final_Out'.format(self.counter),currFrame_rgb)
+            print("hehe")
+            
+
 
         e1 = cv2.getTickCount()
         self.roi = roi
@@ -112,6 +123,11 @@ class HandDetector:
         #ILog.d(skinDifference, 'skindiff')
         # skinDifference (From 2 to 0) + 0.9 * MD(From 1 to 0) supposed to devide by (2.9) then * 255 KASEB
         totalDifference = np.minimum((skinDifference + 0.9 * MD) * 255, 255).astype('uint8')
+
+        if self.counter % 30 == 0:
+            ILog.s(totalDifference,'{}_before_otsu'.format(self.counter))
+
+
         #ILog.d(totalDifference, 'before otsu')
         _ , final_img = cv2.threshold(totalDifference,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         final_img = cv2.erode(final_img, np.ones((2, 2)), iterations = 1)

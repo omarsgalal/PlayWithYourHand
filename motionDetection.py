@@ -4,9 +4,9 @@ from time import sleep
 import numpy as np
 from scipy.ndimage import (label,find_objects)
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
-
 class MotionDetector():
     def __init__(self, initialBackground):
+        self.counter = 0
         self.backgroundModel = initialBackground
         self.threshold = np.ones_like(self.backgroundModel[:,:,0]) #initial value of threshold used in background subtraction
         self.threshold *= 30
@@ -18,6 +18,30 @@ class MotionDetector():
         _, binary1 = cv2.threshold(diff1,threshold,1,cv2.THRESH_BINARY)
         _, binary2 = cv2.threshold(diff2,threshold,1,cv2.THRESH_BINARY)
 
+        if self.counter % 30 == 0:
+            binary1 = cv2.erode(binary1, np.ones((5, 5),dtype='uint8'), iterations = 2)
+            binary2 = cv2.erode(binary2, np.ones((5, 5),dtype='uint8'), iterations = 2)
+            objs1 = ndimage.find_objects(binary1)
+            objs2 = ndimage.find_objects(binary2)
+            if not objs1:
+                mROI1=[0,0,0,0]
+            else:        
+                mROI1=[objs1[0][0].start,objs1[0][0].stop,objs1[0][1].start,objs1[0][1].stop]#ymin,ymax,xmin,xmax
+            if not objs2:
+                mROI2=[0,0,0,0]
+            else:        
+                mROI2=[objs2[0][0].start,objs2[0][0].stop,objs2[0][1].start,objs2[0][1].stop]
+
+            mask1 = np.zeros(binary1.shape,dtype='uint8')
+            mask1[mROI1[0]:mROI1[1], mROI1[2]:mROI1[3]] = 255
+
+            mask2 = np.zeros(binary1.shape,dtype='uint8')
+            mask2[mROI2[0]:mROI2[1], mROI2[2]:mROI2[3]] = 255
+
+            ILog.s(mask1,'{}_image_diffrenceing_last_mROI'.format(self.counter))
+            ILog.s(mask2,'{}_image_diffrenceing_before_last_mROI'.format(self.counter))
+            ILog.s(cv2.bitwise_and(mask1, mask2),'{}_image_diffrenceing_total_mROI'.format(self.counter))
+            
         resultImageDiff = cv2.bitwise_and(binary1, binary2)
         resultImageDiff = cv2.erode(resultImageDiff, np.ones((5, 5),dtype='uint8'), iterations = 2)
 
@@ -41,6 +65,7 @@ class MotionDetector():
         else:        
             # not good Kaseb
             mROI=[objs[0][0].start,objs[0][0].stop,objs[0][1].start,objs[0][1].stop]#ymin,ymax,xmin,xmax
+
         return resultImageDiff, mROI
 
 
@@ -58,7 +83,6 @@ class MotionDetector():
 
         # mask = cv2.erode(skinBModel, np.ones((7,7)), iterations = 2)
         # mask = cv2.dilate(mask, np.ones((15,15)), iterations = 3)
-
         mask1 = np.zeros(self.backgroundModel.shape,dtype='uint8')
         mask1[mROI[0]:mROI[1], mROI[2]:mROI[3],:] = 1
         mask2 = 1 - mask1
@@ -69,6 +93,11 @@ class MotionDetector():
         # why KASEB
         binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
         
+        if self.counter % 30 == 0:
+            ILog.s(binaryBackgroundSubtraction.astype('uint8'),'{}_background_subtraction'.format(self.counter),currentFrame )
+            ILog.s(self.backgroundModel,'{}_background_model'.format(self.counter))
+            ILog.s(skinBModel,'{}_skin_in_background_model'.format(self.counter),self.backgroundModel )
+            
 
         # ILog.d((mask1 * 255).astype('uint8'), 'mroi')
         self.backgroundModel = (mask1 * self.backgroundModel + mask2 * self.backgroundModel * alpha + mask2 * (1 - alpha) * currentFrame).astype('uint8')
@@ -80,6 +109,7 @@ class MotionDetector():
 
 
     def detect(self, frames_gray, currFrame_rgb, skinBModel):
+        self.counter += 1
         # why we don't use the Image Diffrence?
         resultImageDiff, mROI = self.ImageDiff(frames_gray[1],frames_gray[2],frames_gray[0])
         resultBackgroundSub, mROI = self.BackGroundSubtraction(currFrame_rgb, mROI, skinBModel)

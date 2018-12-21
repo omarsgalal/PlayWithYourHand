@@ -1,6 +1,5 @@
 from utils import showImages
-from cv2 import imshow
-
+from cv2 import imshow,imwrite,bitwise_and
 out=False
 debug=False
 class ImageLogger:
@@ -9,7 +8,6 @@ class ImageLogger:
 
     @classmethod
     def o(cls, images, titles=None):
-        return
         '''
             out images if config 'out' = true, else do nothing
         '''
@@ -19,13 +17,19 @@ class ImageLogger:
 
     @classmethod
     def d(cls, images, titles=None):
-        return
         '''
             out images if config 'debug' = true, else do nothing
         '''
         if(not debug):
             return
         showImages(images, titles) if type(images) == type(()) or type(images) == type([]) else imshow(titles, images)        
+
+    @classmethod
+    def s(cls, image, title, frame = None):
+        imwrite('Images/{}.jpg'.format(title), image)
+        if type(frame) != type(None):
+            imwrite('Images/{}_withImage.jpg'.format(title), bitwise_and(frame,frame,mask=image))
+            
 
 
 class GeneralLogger:
