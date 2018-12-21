@@ -44,9 +44,9 @@ class GestureRecognizer:
 
             maxCnt = contours[0]
             x,y,w,h = cv2.boundingRect(maxCnt)
-            hand = hand[y:y+h, x:x+w]
+            croppedHand = hand[y:y+h, x:x+w]
 
-            contours = self.__findContoursSorted__(hand, roi)
+            contours = self.__findContoursSorted__(croppedHand, roi)
             #maxCnt = contours[0]
 
             maxCntArea = cv2.contourArea(maxCnt)
@@ -64,8 +64,9 @@ class GestureRecognizer:
             f_lengthRatio =  h / float(w)
 
             f_defects = self.__findDefects__(roi, maxCnt)
-            ILog.o(hand,'hand_gestureRecog')
-            return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio), self.__contourCenter__(maxCnt)
+            ILog.o(croppedHand,'cropped hand')
+            ILog.d(hand,'hand in gesture recognizer')
+            return self.fromFeatures(f_defects, f_lengthRatio, f_hullCntRatio, f_maxTwoCntRatio), (x + int(w / 2), y + int(h / 2))#self.__contourCenter__(maxCnt)
         except Exception as e:
             GLog.d(e, tag=self.TAG)
             return NO_GST, (0,0)
@@ -138,6 +139,9 @@ class GestureRecognizer:
 
 
 if __name__ == "__main__":
+    import AppLogger as log
+    log.debug = True
+    log.out = True
     gr = GestureRecognizer()
     cap = cv2.VideoCapture(0)
     while(True):
@@ -155,7 +159,7 @@ if __name__ == "__main__":
 
         _mask = cv2.inRange(_hsv, _lower_skin, _upper_skin)
 
-        _gesture = gr.recognize(_roi, _mask)
+        _gesture = gr.recognize(_roi, _mask)[0]
 
         _font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(_frame, _gesture, (0,50), _font, 2, (0,0,255), 3, cv2.LINE_AA)
