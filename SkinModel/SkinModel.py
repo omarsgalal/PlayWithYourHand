@@ -1,18 +1,17 @@
 import numpy as np
 import cv2
-import skimage.io as io
+#// import skimage.io as io
 import os 
-from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
-from TrainSkinModel import TrainSkinModel
-# from SkinModel.TrainSkinModel import TrainSkinModel
+#// from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
+# from TrainSkinModel import TrainSkinModel
+from SkinModel.TrainSkinModel import loadModel 
 from scipy import ndimage
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))
 
 class SkinModel():
     def __init__(self):
-        self.trained = TrainSkinModel()
-        self.skinHisto,self.nonskinHisto = self.trained.loadModel()
+        self.skinHisto,self.nonskinHisto = loadModel()
 
         self.Tskin = np.sum(self.skinHisto)
         self.Tnon = np.sum(self.nonskinHisto)

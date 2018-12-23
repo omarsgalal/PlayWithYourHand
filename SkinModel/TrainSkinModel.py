@@ -70,22 +70,6 @@ class TrainSkinModel():
         np.save("AllModel-nonskin.npy",nonskinHisto)
 
     
-    def loadModel(self):
-        try:
-            skinHisto = np.load("AllModel-skin.npy")
-            nonskinHisto = np.load("AllModel-nonskin.npy")
-
-        except:
-            os.system("wget https://transfer.sh/12sP3e/AllModel-skin.npy")
-            os.system("wget https://transfer.sh/TMCm2/AllModel-nonskin.npy")
-            skinHisto = np.load("AllModel-skin.npy")
-            nonskinHisto = np.load("AllModel-nonskin.npy")
-
-        # to be removed if the new model come
-        skinHisto[0,0,0] = 0
-        nonskinHisto[0,0,0] = 0
-
-        return skinHisto,nonskinHisto
 
 
 
@@ -112,3 +96,20 @@ class TrainSkinModel():
         os.system("wget 'https://transfer.sh/P2pwS/wider_face_train_bbx_gt.txt' &> abdo.txt")
 
 
+
+def loadModel():
+    try:
+        skinHisto = np.load("AllModel-skin.npy")
+        nonskinHisto = np.load("AllModel-nonskin.npy")
+
+    except:
+        os.system("wget https://transfer.sh/12sP3e/AllModel-skin.npy")
+        os.system("wget https://transfer.sh/TMCm2/AllModel-nonskin.npy")
+        skinHisto = np.load("AllModel-skin.npy")
+        nonskinHisto = np.load("AllModel-nonskin.npy")
+
+    # to be removed if the new model come
+    skinHisto[0,0,0] = 0
+    nonskinHisto[0,0,0] = 0
+
+    return skinHisto,nonskinHisto
