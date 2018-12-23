@@ -3,8 +3,8 @@ import cv2
 import skimage.io as io
 import os 
 from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
-#from TrainSkinModel import TrainSkinModel
-from SkinModel.TrainSkinModel import TrainSkinModel
+from TrainSkinModel import TrainSkinModel
+# from SkinModel.TrainSkinModel import TrainSkinModel
 from scipy import ndimage
 # skinHisto = np.zeros((256,256,256))
 # nonskinHisto = np.zeros((256,256,256))
@@ -72,8 +72,7 @@ class SkinModel():
         mask1 = (mask1 > 0.15) * (mask1 < 1.1)
         mask2 = (mask2 > -4) * (mask2 < 0.3)
 
-        mask = (mask1 * mask2).astype('uint8')
-        return mask
+        return (mask1 * mask2).astype('uint8')
 
 
 
@@ -100,7 +99,7 @@ class SkinModel():
         """https://www.researchgate.net/publication/26593885_A_Skin_Detection_Approach_Based_on_Color_Distance_Map"""
         if mode == 'BGR':
             rgb = img[...,::-1]
-            hsv = cv2.cvtColor(img.astype('uint8'), cv2.COLOR_BGR2HSV)
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         elif mode=='RGB':
             rgb = img
             hsv = rgb2hsv(img)
@@ -110,14 +109,8 @@ class SkinModel():
         else:
             raise ValueError('Image mode is not RGB nor HSV')
 
-        lowerHSV = np.array([0, 0, 0], dtype = "uint8")
-        upperHSV = np.array([50, 175, 255], dtype = "uint8")
-
-        lowerRGB = np.array([95, 40, 20], dtype = "uint8")
-        upperRGB = np.array([255, 255, 255], dtype = "uint8")
-
-        mask1 = cv2.inRange(hsv, lowerHSV, upperHSV)
-        mask2 = cv2.inRange(rgb, lowerRGB, upperRGB)
+        mask1 = cv2.inRange(hsv, (0, 0, 0), (50, 175, 255))
+        mask2 = cv2.inRange(rgb, (95, 40, 20), (255, 255, 255))
         #  R > G and R > B and | R - G | > 15 and A > 15
         mask3 = (rgb[:,:,0] > rgb[:,:,1]) * (rgb[:,:,0] > rgb[:,:,2]) * ((rgb[:,:,0] - rgb[:,:,1]) > 15)
 
