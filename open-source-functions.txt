@@ -33,6 +33,7 @@
     3-minimum
     4-ones_like
     5-linalg.norm
+    6-Algebraic operations like +,*,-,**
 ---------------------------------------------------------------------
 #pyautogui:
     1-moveRel
@@ -46,5 +47,5 @@
     1-find_objects
 -----------------------------------------------------------------
 #others:
-    from argparse :ArgumentParser,add_argument,parse_args
-    from math:sqrt,acos
+    from argparse: ArgumentParser,add_argument,parse_args
+    from math: sqrt,acos
