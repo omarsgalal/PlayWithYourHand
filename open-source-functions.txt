@@ -1,0 +1,50 @@
+#this file contains all the functions we used from any opensource library 
+
+#opencv:
+    1-getTickCount
+    2-getTickFrequency
+    3-imshow
+    4-erode
+    5-dilate
+    5-boundingRect 
+    6-contourArea
+    7-convexHull
+    8-GaussianBlur
+    9-moments
+    10-drawContours
+    11-arcLength
+    12-approxPolyDP
+    13-convexityDefects
+    14-VideoCapture
+    15-flip
+    16-rectangle
+    17-cvtColor
+    18-putText
+    19-destroyAllWindows
+    20-threshold
+    21-waitKey
+    22-absdiff
+    23-bitwise_and
+
+----------------------------------------------------------------------
+#NUMPY :
+    1-ones
+    2-maximum
+    3-minimum
+    4-ones_like
+    5-linalg.norm
+---------------------------------------------------------------------
+#pyautogui:
+    1-moveRel
+    2-dragRel
+    3-scroll
+    4-press
+    5-click
+    7-rightClick
+------------------------------------------------------------------
+#scipy:
+    1-find_objects
+-----------------------------------------------------------------
+#others:
+    from argparse :ArgumentParser,add_argument,parse_args
+    from math:sqrt,acos
