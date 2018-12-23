@@ -22,7 +22,6 @@ class MotionDetector():
 
         ILog.d((resultImageDiff * 255), 'imgdiff')
 
-        #resultImageDiff, _ = ndimage.measurements.label(resultImageDiff)
         objs = find_objects(resultImageDiff)
 
         if not objs:

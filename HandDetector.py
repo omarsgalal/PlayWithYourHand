@@ -77,19 +77,8 @@ class HandDetector:
         mask = frame * roi
         ILog.d(mask*255, "handWithoutFaceFrame")
         mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
-        mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)
-        # resultImageDiff, _ = ndimage.measurements.label(mask)
-        # objs = ndimage.find_objects(resultImageDiff)
-            # if (len(objs) == 1):
-            #     print(self.handCout)
-            #     break
-            # self.handCout += 1
-        # if self.handCout >= 25:
-            # self.handCout = 15
-
+        mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)5
         ILog.d(mask*255, "handWithoutFace")
-                # if self.handCout >= 25:
-        #     self.handCout = 15
 
         return mask
 
@@ -107,9 +96,7 @@ class HandDetector:
     #omar trial
     def __combine2__(self, MD, SCD, sB,Hand):
         skinDifference = np.maximum(SCD.astype(float) + Hand - cv2.dilate(sB, np.ones((7,7),dtype='float'), iterations = 3), 0)
-        #skinDifference = cv2.dilate(skinDifference, np.ones((3, 3)), iterations = 1)
         ILog.d(skinDifference, 'skindiff')
-        # skinDifference (From 2 to 0) + 0.9 * MD(From 1 to 0) supposed to devide by (2.9) then * 255 KASEB
         totalDifference = np.minimum((skinDifference + 0.9 * MD) * 255, 255).astype('uint8')
         ILog.d(totalDifference, 'before otsu')
         _ , final_img = cv2.threshold(totalDifference,0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
