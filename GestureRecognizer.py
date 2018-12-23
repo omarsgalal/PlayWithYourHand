@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import math
-from scipy import ndimage
 from Gestures import *
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 

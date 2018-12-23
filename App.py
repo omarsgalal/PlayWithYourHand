@@ -66,7 +66,7 @@ def main():
     while(True):
         tester.step()
         #// tester.showAllImages()
-    tester.gc.stop()
+    #tester.gc.stop()
 
 if __name__ == "__main__":
     main()

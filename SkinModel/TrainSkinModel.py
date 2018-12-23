@@ -1,8 +1,8 @@
 import numpy as np
-import cv2
-import skimage.io as io
+#// import cv2
+#// import skimage.io as io
 import os 
-from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
+#// from skimage.color import rgb2gray,rgb2hsv,hsv2rgb
 
 
 class TrainSkinModel():

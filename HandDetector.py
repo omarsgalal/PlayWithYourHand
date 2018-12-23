@@ -1,11 +1,10 @@
-from morphology import calcMorphology
+#// from morphology import calcMorphology
 import cv2
 import numpy as np
 from SkinModel.SkinModel import SkinModel
-from morphology import MorphologyDetector
+#// from morphology import MorphologyDetector
 from motionDetection import MotionDetector
 from utils import timeMessage
-from scipy import ndimage
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
 class HandDetector:
@@ -14,7 +13,7 @@ class HandDetector:
     def __init__(self, initialBackground):
         self.backgroundModel = initialBackground
         self.__skinModel__ = SkinModel()
-        self.__morphologyWeight = MorphologyDetector()
+        #// self.__morphologyWeight = MorphologyDetector()
         self.__motionDetection__ = MotionDetector(initialBackground)
         self.__skinBackgroundModel__ = None
         self.handCout = 15 

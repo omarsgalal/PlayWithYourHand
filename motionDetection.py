@@ -1,8 +1,7 @@
 import cv2
-from scipy import ndimage
 from time import sleep
 import numpy as np
-from scipy.ndimage import (label,find_objects)
+from scipy.ndimage import find_objects
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
 class MotionDetector():
@@ -24,40 +23,18 @@ class MotionDetector():
         ILog.d((resultImageDiff * 255), 'imgdiff')
 
         #resultImageDiff, _ = ndimage.measurements.label(resultImageDiff)
-        objs = ndimage.find_objects(resultImageDiff)
-
-        '''max_area = 0
-        mROI=[0,0,0,0]
-        for obj in objs:
-            area = (obj[0].start - obj[0].stop ) * (obj[1].start - obj[1].stop) 
-            if area > max_area:
-                max_area = area
-                mROI = [obj[0].start, obj[0].stop, obj[1].start, obj[1].stop]#ymin,ymax,xmin,xmax
-
-        print (mROI)'''
+        objs = find_objects(resultImageDiff)
 
         if not objs:
             mROI=[0,0,0,0]
         else:        
-            # not good Kaseb
-            mROI=[objs[0][0].start,objs[0][0].stop,objs[0][1].start,objs[0][1].stop]#ymin,ymax,xmin,xmax
+            mROI=[objs[0][0].start,objs[0][0].stop,objs[0][1].start,objs[0][1].stop]
         return resultImageDiff, mROI
 
 
 
     def BackGroundSubtraction(self, currentFrame, mROI, skinBModel, alpha=0.95):
-        diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)#,keepdims=True)
-        # one cancelled rule for using skin background model while subtracting
-        # skinBModel = 2 * skinBModel + 1
-        #binaryBackgroundSubtraction = (diffBackgroundSubtraction > self.threshold ).astype('uint8')#  / skinBModel)#.astype(int)
-
-        #trial to fill gaps due to subtraction Samir
-        # binaryBackgroundSubtraction = cv2.dilate(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)
-        # binaryBackgroundSubtraction = cv2.erode(binaryBackgroundSubtraction, np.ones((3,3),dtype='uint8'), iterations = 3)        
-        
-
-        # mask = cv2.erode(skinBModel, np.ones((7,7)), iterations = 2)
-        # mask = cv2.dilate(mask, np.ones((15,15)), iterations = 3)
+        diffBackgroundSubtraction = np.linalg.norm(cv2.absdiff(self.backgroundModel, currentFrame),axis=2)
 
         mask1 = np.zeros(self.backgroundModel.shape,dtype='uint8')
         mask1[mROI[0]:mROI[1], mROI[2]:mROI[3],:] = 1
@@ -66,7 +43,6 @@ class MotionDetector():
         skinBModelT = -1.0 * skinBModel * mask1[:,:,0] / 2 + 1
         
         binaryBackgroundSubtraction = diffBackgroundSubtraction > (self.threshold * skinBModelT) #  / skinBModel)#.astype(int)
-        # why KASEB
         binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
         
 
@@ -80,7 +56,6 @@ class MotionDetector():
 
 
     def detect(self, frames_gray, currFrame_rgb, skinBModel):
-        # why we don't use the Image Diffrence?
         resultImageDiff, mROI = self.ImageDiff(frames_gray[1],frames_gray[2],frames_gray[0])
         resultBackgroundSub, mROI = self.BackGroundSubtraction(currFrame_rgb, mROI, skinBModel)
         return mROI, resultBackgroundSub

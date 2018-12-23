@@ -1,5 +1,7 @@
 import GameController as gc
 from threading import Thread
+import threading
+from queue import Queue
 from Gestures import NO_GST
 from AppLogger import GeneralLogger as GLog
 from cv2 import getTickCount, getTickFrequency
@@ -42,6 +44,8 @@ class AsyncControlRepeater:
         return self
 
     def control(self):
+        q = Queue()
+        q.get(block=True, timeout=0.01)
         GLog.d("control started", tag = self.TAG)
         while not self.stopped:
             if(False and len(self.gestures) == 1):
