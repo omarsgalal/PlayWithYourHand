@@ -64,8 +64,8 @@ class HandDetector:
 
 
         if self.counter % 30 == 0:
-            ILog.s(handOnly,'{}_hand_Without_Face'.format(self.counter),currFrame_rgb)
-            ILog.s(skinColorDetection,'{}_skin_in_frame'.format(self.counter),currFrame_rgb)
+            ILog.s(handOnly*255,'{}_hand_Without_Face'.format(self.counter),currFrame_rgb)
+            ILog.s(skinColorDetection*255,'{}_skin_in_frame'.format(self.counter),currFrame_rgb)
             ILog.s(finalOut,'{}_Hand_Only_Final_Out'.format(self.counter),currFrame_rgb)
             print("hehe")
             
@@ -86,6 +86,9 @@ class HandDetector:
         frame = self.__skinModel__.detectRangeAllSpaces(img) #* 0.011 s
 
         # while self.handCout<25:
+        if self.counter % 30 == 0:
+            ILog.s(frame*255,'{}_hand_Without_Face_frame_only'.format(self.counter),img)
+
         mask = frame * roi
         ILog.d(mask*255, "handWithoutFaceFrame")
         mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)

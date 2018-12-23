@@ -94,9 +94,9 @@ class MotionDetector():
         binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
         
         if self.counter % 30 == 0:
-            ILog.s(binaryBackgroundSubtraction.astype('uint8'),'{}_background_subtraction'.format(self.counter),currentFrame )
+            ILog.s((binaryBackgroundSubtraction*255).astype('uint8'),'{}_background_subtraction'.format(self.counter),currentFrame )
             ILog.s(self.backgroundModel,'{}_background_model'.format(self.counter))
-            ILog.s(skinBModel,'{}_skin_in_background_model'.format(self.counter),self.backgroundModel )
+            ILog.s(skinBModel*255,'{}_skin_in_background_model'.format(self.counter),self.backgroundModel )
             
 
         ILog.d((mask1 * 255).astype('uint8'), 'mroi')
