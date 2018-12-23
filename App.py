@@ -2,7 +2,7 @@ from VideoSequence import VideoSequence as Vs
 from HandDetector import HandDetector as Hd
 from GestureRecognizer import GestureRecognizer as Gd
 from GameController import GameController as Gc
-from AsyncControlRepeater import AsyncControlRepeater 
+#// from AsyncControlRepeater import AsyncControlRepeater 
 from utils import showImages, timeMessage
 from ConfigReader import ConfigReader
 import AppLogger as Logger

@@ -38,7 +38,6 @@ class AsyncControlRepeater:
 
     def start(self, initGst = NO_GST):
         # start the thread (no more)
-        # todo, add check for not to create a new thread if it started already
         self.stopped = False
         Thread(target=self.control, args=()).start()
         return self

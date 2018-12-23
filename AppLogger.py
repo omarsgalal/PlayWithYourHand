@@ -9,7 +9,6 @@ class ImageLogger:
 
     @classmethod
     def o(cls, images, titles=None):
-        # return
         '''
             out images if config 'out' = true, else do nothing
         '''
@@ -19,7 +18,6 @@ class ImageLogger:
 
     @classmethod
     def d(cls, images, titles=None):
-        # return
         '''
             out images if config 'debug' = true, else do nothing
         '''

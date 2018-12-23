@@ -54,7 +54,6 @@ class GestureRecognizer:
             
             hull = cv2.convexHull(maxCnt)
             areahull = cv2.contourArea(hull)
-            #f_hullCntRatio = (areahull - maxCntArea) / maxCntArea
             f_hullCntRatio = areahull / maxCntArea
 
 
@@ -98,14 +97,12 @@ class GestureRecognizer:
 
         f_numDefects = 0
         
-        #code for finding no. of defects due to fingers
+        # finding no. of defects due to fingers
         for i in range(defects.shape[0]):
             s,e,f,d = defects[i,0]
             start = tuple(approx[s][0])
             end = tuple(approx[e][0])
             far = tuple(approx[f][0])
-            pt= (100,180)
-            
             
             # find length of all sides of triangle
             a = math.sqrt((end[0] - start[0])**2 + (end[1] - start[1])**2)
@@ -121,7 +118,7 @@ class GestureRecognizer:
             angle = math.acos((b**2 + c**2 - a**2)/(2*b*c)) * 57
             
         
-            # ignore angles > 90 and ignore points very close to convex hull(they generally come due to noise)
+            # ignore angles > 90 and ignore points very close to convex hull (they generally come due to noise)
             if angle <= 90 and d > T_MIN_DISTANCE:
                 f_numDefects += 1
                 # cv2.circle(roi, far, 3, [255,0,0], -1)
