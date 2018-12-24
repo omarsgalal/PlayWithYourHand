@@ -10,6 +10,6 @@ The increasing spread of intelligent computing in everyday life has introduced a
 
 ### Hand Gesture --> Control of the game:
 Open-palm --> Motion
-Fist --> Mouse right click
-Like a Zero Shape --> Mouse left click
+Fist --> Mouse left click
+Like a Zero Shape --> Mouse right click
 Like a knife --> Pause or Menu
