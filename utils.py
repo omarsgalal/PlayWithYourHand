@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-
 def toGray(frame):
     return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -23,3 +22,14 @@ def get3DMask(mask2D):
 def timeMessage(who, e1):
     e2 = cv2.getTickCount()
     return "{} elapsed {} seconds".format(who, (e2-e1)*1.0 / cv2.getTickFrequency())
+
+
+def multiplyImage(factor):
+    def decorator(img):
+        return img * factor
+    return decorator
+
+def toType(type):
+    def decorator(img):
+        return img.astype(type)
+    return decorator

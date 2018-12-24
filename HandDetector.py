@@ -4,7 +4,7 @@ import numpy as np
 from SkinModel.SkinModel import SkinModel
 #// from morphology import MorphologyDetector
 from motionDetection import MotionDetector
-from utils import timeMessage
+from utils import timeMessage, multiplyImage
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
 
 class HandDetector:
@@ -75,10 +75,10 @@ class HandDetector:
 
         # while self.handCout<25:
         mask = frame * roi
-        ILog.d(mask*255, "handWithoutFaceFrame")
+        ILog.d(mask, "handWithoutFaceFrame", preFunc=(multiplyImage(255),))
         mask = cv2.erode(mask, np.ones((7,7)), iterations = self.handCout)
-        mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)5
-        ILog.d(mask*255, "handWithoutFace")
+        mask = cv2.dilate(mask, np.ones((7,7)), iterations = self.handCout)
+        ILog.d(mask, "handWithoutFace", preFunc=(multiplyImage(255),))
 
         return mask
 

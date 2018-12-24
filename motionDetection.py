@@ -3,7 +3,7 @@ from time import sleep
 import numpy as np
 from scipy.ndimage import find_objects
 from AppLogger import ImageLogger as ILog, GeneralLogger as GLog
-
+from utils import multiplyImage, toType 
 class MotionDetector():
     def __init__(self, initialBackground):
         self.backgroundModel = initialBackground
@@ -20,7 +20,7 @@ class MotionDetector():
         resultImageDiff = cv2.bitwise_and(binary1, binary2)
         resultImageDiff = cv2.erode(resultImageDiff, np.ones((5, 5),dtype='uint8'), iterations = 2)
 
-        ILog.d((resultImageDiff * 255), 'imgdiff')
+        ILog.d(resultImageDiff, 'imgdiff', preFunc=(multiplyImage(255),))
 
         objs = find_objects(resultImageDiff)
 
@@ -45,7 +45,7 @@ class MotionDetector():
         binaryBackgroundSubtraction = (1 / (2 * skinBModelT)) * binaryBackgroundSubtraction
         
 
-        ILog.d((mask1 * 255).astype('uint8'), 'mroi')
+        ILog.d(mask1, 'mroi', preFunc=(multiplyImage(255), toType('uint8')))
         self.backgroundModel = (mask1 * self.backgroundModel + mask2 * self.backgroundModel * alpha + mask2 * (1 - alpha) * currentFrame).astype('uint8')
 
         self.threshold = mask1[:,:,0] * self.threshold + mask2[:,:,0] * alpha * self.threshold + 5 * (1 - alpha) * diffBackgroundSubtraction * mask2[:,:,0]
