@@ -62,7 +62,7 @@ def main():
     parser = ArgumentParser(prog='mouse controlling with hand :)')
     parser.add_argument('-f', '--feeding', action='store_true')
     args = parser.parse_args()
-    tester = AppManager(output=True, debug=True, feeding=args.feeding)
+    tester = AppManager(output=False, debug=False, feeding=args.feeding)
     while(True):
         tester.step()
         #// tester.showAllImages()

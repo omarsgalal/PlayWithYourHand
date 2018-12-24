@@ -23,10 +23,10 @@ class GestureRecognizer:
             return PALM
         elif lengthRatio > 2:
             return KNIFE
+        elif lengthRatio < 1.45 and lengthRatio > 0.8 and hullCntRatio > 0.8 and hullCntRatio < 1.2: # square like
+            return FIST
         elif maxTwoCntRatio < 250 :
             return ZERO
-        elif lengthRatio < 1.45 and lengthRatio > 0.8 and hullCntRatio > 0.9 and hullCntRatio < 1.1: # square like
-            return FIST
         else:
             return NO_GST
 
